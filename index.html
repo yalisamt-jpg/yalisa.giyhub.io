@@ -1,0 +1,1592 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Moshi Go! 🌟 สระแก้ว</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--p:#534AB7;--pd:#3C3489;--pl:#EEEDFE;--bg:#F4F2FF;--tx:#2d3a4a;--txl:#94a3b8;--gold:#f59e0b;--r:16px;--sh:0 2px 12px rgba(83,74,183,.1)}
+body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
+button{font-family:'Prompt',sans-serif;cursor:pointer}
+#toast{position:fixed;top:74px;left:50%;transform:translateX(-50%) translateY(-80px);background:#1e293b;color:#fff;padding:10px 22px;border-radius:100px;font-size:13px;font-weight:500;z-index:9999;transition:transform .3s;white-space:nowrap;pointer-events:none}
+#toast.show{transform:translateX(-50%) translateY(0)}
+#authScreen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:linear-gradient(160deg,#c2e4f8 0%,#e8f4fd 40%,var(--bg) 70%)}
+.logo-wrap{text-align:center;margin-bottom:28px}
+.logo-emoji{font-size:64px;display:block;animation:bob 3s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.logo-title{font-size:32px;font-weight:700;color:var(--pd);margin-top:4px}
+.logo-sub{font-size:13px;color:var(--txl);margin-top:4px}
+.auth-card{background:#fff;border-radius:22px;padding:26px 22px;width:100%;max-width:380px;box-shadow:var(--sh)}
+.auth-tabs{display:flex;background:var(--bg);border-radius:14px;padding:4px;margin-bottom:20px;gap:4px}
+.auth-tab{flex:1;padding:9px;border:none;border-radius:11px;font-size:13px;font-weight:500;background:transparent;color:var(--txl);transition:all .2s}
+.auth-tab.active{background:#fff;color:var(--pd);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.field{margin-bottom:13px}
+.field label{display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:5px}
+.field input{width:100%;padding:11px 14px;border:1.5px solid #dbeeff;border-radius:12px;font-family:'Prompt',sans-serif;font-size:14px;color:var(--tx);background:var(--bg);outline:none;transition:border-color .2s}
+.field input:focus{border-color:var(--p);background:#fff}
+.btn-main{width:100%;padding:13px;border:none;border-radius:12px;font-family:'Prompt',sans-serif;font-size:14px;font-weight:600;background:var(--p);color:#fff;transition:all .2s}
+.btn-main:hover{background:var(--pd);transform:translateY(-1px)}
+.btn-main:disabled{background:#b0d4f1;cursor:not-allowed;transform:none}
+.msg-box{border-radius:10px;padding:9px 13px;font-size:12px;margin-top:9px}
+.msg-box.error{background:#fee2e2;color:#dc2626}
+.msg-box.success{background:#dcfce7;color:#15803d}
+#mainApp{display:none}
+.app-header{background:#fff;padding:13px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 8px rgba(90,175,232,.1);position:sticky;top:0;z-index:50}
+.app-logo{font-size:18px;font-weight:700;color:var(--pd)}
+.coins-chip{display:flex;align-items:center;gap:5px;background:var(--pl);padding:5px 13px;border-radius:20px;font-size:14px;font-weight:700;color:var(--pd)}
+.content{padding:14px 14px 90px}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;display:flex;border-top:1px solid #e0eef8;z-index:100;padding:5px 0 max(5px,env(safe-area-inset-bottom))}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 0;border:none;background:none}
+.nav-btn .ni{font-size:20px;transition:transform .2s}
+.nav-btn .nl{font-size:9px;color:var(--txl);font-weight:500}
+.nav-btn.active{background:var(--pl);border-radius:12px}
+.nav-btn.active .ni{transform:none}
+.nav-btn.active .nl{color:var(--pd);font-weight:600}
+.search-wrap{display:flex;align-items:center;gap:9px;background:#fff;border-radius:14px;padding:10px 14px;box-shadow:var(--sh);margin-bottom:10px}
+.search-wrap input{flex:1;border:none;outline:none;font-family:'Prompt',sans-serif;font-size:13px;color:var(--tx);background:transparent}
+.search-wrap input::placeholder{color:var(--txl)}
+.filter-group{margin-bottom:8px}
+.filter-label{font-size:11px;font-weight:600;color:var(--txl);margin-bottom:5px;padding-left:2px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{white-space:nowrap;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1.5px solid #dbeeff;background:#fff;color:var(--txl);transition:all .18s;cursor:pointer}
+.chip.active{background:var(--p);border-color:var(--p);color:#fff}
+.chip-dist{background:var(--bg);border-color:#cbd5e1}
+.chip-dist.active{background:#334155;border-color:#334155;color:#fff}
+.places-grid{display:grid;grid-template-columns:1fr;gap:10px}
+.place-card{background:#fff;border-radius:var(--r);padding:14px;cursor:pointer;box-shadow:var(--sh);border-left:4px solid var(--p);transition:all .2s;position:relative;padding-bottom:42px}
+.place-card:hover{transform:translateY(-2px);box-shadow:0 6px 22px rgba(90,175,232,.2)}
+.place-card.in-plan{border-left-color:#22c55e;border-right:4px solid #22c55e}
+.pc-row{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px}
+.pc-name{font-size:14px;font-weight:600;color:var(--tx);flex:1;margin-right:8px}
+.pc-badge{font-size:10px;padding:3px 9px;border-radius:20px;font-weight:600;white-space:nowrap}
+.pc-dist{font-size:11px;color:var(--txl);margin-bottom:5px}
+.pc-hl{font-size:11px;color:#64748b;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pc-img{width:100%;height:130px;object-fit:cover;border-radius:10px;margin-bottom:8px;display:block;background:var(--pl)}
+.pc-img-ph{width:100%;height:100px;border-radius:10px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;font-size:32px}
+.btn-plan-add{position:absolute;bottom:10px;right:10px;width:30px;height:30px;border-radius:50%;border:2px solid var(--p);background:#fff;color:var(--p);font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.btn-plan-add.added{background:#22c55e;border-color:#22c55e;color:#fff}
+.mission-card{background:#fff;border-radius:var(--r);padding:14px;margin-bottom:10px;cursor:pointer;box-shadow:var(--sh);transition:all .2s}
+.mission-card:hover{transform:translateY(-2px)}
+.mission-card.done{border-left:4px solid #86efac}
+.mission-card.pending{border-left:4px solid var(--p)}
+.mc-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
+.mc-place{font-size:13px;font-weight:700;color:var(--tx);flex:1}
+.mc-reward{font-size:12px;font-weight:700;color:var(--gold);background:#fef9ee;padding:2px 9px;border-radius:20px}
+.mc-task{font-size:11px;color:var(--txl);margin-bottom:6px}
+.mc-status{font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;display:inline-block}
+.mc-status.done{background:#dcfce7;color:#15803d}
+.mc-status.pending{background:var(--pl);color:var(--pd)}
+.plan-notice{background:var(--pl);border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--pd);font-weight:500}
+.plan-hero{background:linear-gradient(135deg,var(--p) 0%,var(--pd) 100%);border-radius:20px;padding:20px;margin-bottom:14px;color:#fff;text-align:center}
+.plan-hero-title{font-size:17px;font-weight:700}
+.plan-hero-sub{font-size:12px;opacity:.85;margin-top:3px}
+.plan-stats{display:flex;gap:10px;justify-content:center;margin-top:12px}
+.plan-stat{background:rgba(255,255,255,.2);border-radius:12px;padding:8px 16px;text-align:center}
+.plan-stat-n{font-size:20px;font-weight:700}
+.plan-stat-l{font-size:10px;opacity:.85}
+.plan-card{background:#fff;border-radius:var(--r);padding:14px;margin-bottom:10px;box-shadow:var(--sh);display:flex;gap:12px;align-items:flex-start}
+.plan-num{width:28px;height:28px;border-radius:50%;background:var(--p);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.plan-info{flex:1}
+.plan-name{font-size:13px;font-weight:700;color:var(--tx)}
+.plan-dist-txt{font-size:11px;color:var(--txl);margin-top:2px}
+.plan-hl{font-size:11px;color:#64748b;margin-top:4px;line-height:1.5}
+.btn-plan-remove{width:26px;height:26px;border-radius:50%;border:none;background:#fee2e2;color:#dc2626;font-size:14px;flex-shrink:0;cursor:pointer}
+.plan-actions{display:flex;gap:8px;margin-top:14px}
+.btn-plan-clear{flex:1;padding:12px;background:#f1f5f9;color:var(--tx);border:none;border-radius:12px;font-family:'Prompt',sans-serif;font-size:13px;font-weight:600;cursor:pointer}
+.btn-plan-go{flex:1;padding:12px;background:var(--p);color:#fff;border:none;border-radius:12px;font-family:'Prompt',sans-serif;font-size:13px;font-weight:600;cursor:pointer}
+.plan-route-summary{background:var(--pl);border-radius:14px;padding:14px;margin-top:12px}
+.route-item{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px}
+.route-dot{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.route-dot.s{background:#a7f3d0}.route-dot.m{background:#fde68a}.route-dot.e{background:var(--p);color:#fff}
+.route-line{width:2px;height:12px;background:#c7dff8;margin:-1px 0 -1px 11px}
+.route-name{font-size:12px;font-weight:600;color:var(--tx)}
+.route-detail{font-size:10px;color:#64748b;margin-top:1px}
+.btn-copy-plan{width:100%;padding:11px;background:#fff;color:var(--pd);border:2px solid var(--p);border-radius:12px;font-family:'Prompt',sans-serif;font-size:13px;font-weight:700;margin-top:10px;cursor:pointer}
+.wardrobe-top{background:linear-gradient(135deg,#D4956B 0%,#A0714F 100%);border-radius:20px;padding:20px 16px;margin-bottom:16px;text-align:center;color:#fff}
+.wardrobe-label{font-size:12px;font-weight:600;opacity:.85;margin-top:8px}
+.mascot-wrap{position:relative;width:120px;height:148px;margin:0 auto}
+.slot-hat{position:absolute;top:0;width:100%;text-align:center;font-size:36px;line-height:1;z-index:10;pointer-events:none;transition:all .35s}
+.slot-glasses{position:absolute;top:52px;left:50%;transform:translateX(-50%);font-size:22px;line-height:1;z-index:11;pointer-events:none;transition:all .35s}
+.slot-bag{position:absolute;right:-8px;bottom:16px;font-size:26px;z-index:10;pointer-events:none;transition:all .35s}
+.bear-head{position:absolute;top:22px;left:14px;width:92px;height:84px;background:#F5C888;border-radius:50%}
+.bear-ear{position:absolute;width:30px;height:28px;background:#F5C888;border-radius:50%;top:-11px}
+.bear-ear.l{left:9px}.bear-ear.r{right:9px}
+.bear-ear::after{content:'';position:absolute;width:16px;height:16px;background:#F9A8C4;border-radius:50%;top:6px;left:7px}
+.bear-eye{position:absolute;top:24px;width:11px;height:13px;background:#2d3a4a;border-radius:50%}
+.bear-eye.l{left:17px}.bear-eye.r{right:17px}
+.bear-eye::after{content:'';position:absolute;top:2px;right:2px;width:3px;height:3px;background:#fff;border-radius:50%}
+.bear-snout{position:absolute;top:44px;left:50%;transform:translateX(-50%);width:34px;height:22px;background:#FAE0C0;border-radius:50%}
+.bear-nose{position:absolute;top:6px;left:50%;transform:translateX(-50%);width:10px;height:6px;background:#2d3a4a;border-radius:50% 50% 40% 40%}
+.bear-cheek{position:absolute;top:46px;width:13px;height:8px;background:#F9A8C4;border-radius:50%;opacity:.65}
+.bear-cheek.l{left:8px}.bear-cheek.r{right:8px}
+.bear-body{position:absolute;bottom:0;left:8px;width:104px;height:60px;background:#F5C888;border-radius:40% 40% 50% 50%}
+.bear-paw{position:absolute;bottom:1px;width:26px;height:14px;background:#EFB870;border-radius:50%}
+.bear-paw.l{left:10px}.bear-paw.r{right:10px}
+@keyframes bearPop{0%{transform:translateY(0) scale(1)}20%{transform:translateY(-9px) scale(1.07,0.95)}45%{transform:translateY(3px) scale(0.96,1.04)}65%{transform:translateY(-4px) scale(1.03,0.98)}80%{transform:translateY(1px)}100%{transform:translateY(0) scale(1)}}
+.mascot-wrap.pop{animation:bearPop .55s cubic-bezier(.36,.07,.19,.97) both}
+.lsc{background:#fff;border-radius:var(--r);padding:14px;margin-bottom:10px;box-shadow:var(--sh)}
+.lsc-row{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px}
+.lsc-icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.lsc-cat{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;display:inline-block;margin-bottom:3px}
+.lsc-name{font-size:13px;font-weight:600;color:var(--tx);margin-bottom:2px}
+.lsc-desc{font-size:11px;color:var(--txl)}
+.lsc-foot{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--pl);padding-top:8px;margin-top:4px}
+.lsc-price{font-size:12px;font-weight:700;color:var(--gold)}
+.lsc-disc{font-size:11px;color:var(--txl)}
+.btn-redeem{padding:7px 14px;border:none;border-radius:10px;font-family:'Prompt',sans-serif;font-size:12px;font-weight:600;background:var(--p);color:#fff;cursor:pointer}
+.btn-redeem:disabled{background:#cbd5e1;cursor:not-allowed}
+.cp-bg{display:none;position:fixed;inset:0;background:rgba(20,40,70,.5);z-index:700;align-items:center;justify-content:center;padding:20px}
+.cp-bg.show{display:flex}
+.cp-card{background:#fff;border-radius:24px;width:100%;max-width:340px;padding:22px 18px;text-align:center}
+.cp-shop{font-size:15px;font-weight:700;color:var(--tx);margin-bottom:3px}
+.cp-disc{font-size:13px;color:var(--pd);margin-bottom:14px;font-weight:600}
+.cp-box{border:2px dashed var(--p);border-radius:14px;padding:16px;background:var(--pl);margin-bottom:12px}
+.cp-lbl{font-size:10px;color:var(--txl);margin-bottom:5px}
+.cp-code{font-size:19px;font-weight:700;letter-spacing:3px;color:var(--pd);word-break:break-all}
+.cp-info{font-size:11px;color:var(--txl);margin-top:7px;line-height:1.6}
+.btn-cp-copy{width:100%;padding:10px;border:2px solid var(--p);border-radius:11px;font-family:'Prompt',sans-serif;font-size:13px;font-weight:600;background:#fff;color:var(--pd);cursor:pointer;margin-bottom:7px}
+.btn-cp-close{width:100%;padding:10px;border:none;border-radius:11px;font-family:'Prompt',sans-serif;font-size:13px;background:#f1f5f9;color:var(--tx);cursor:pointer}
+.adm-form{background:var(--pl);border-radius:14px;padding:14px;margin-bottom:10px}
+.adm-item{background:#fff;border-radius:11px;padding:10px 12px;margin-bottom:7px;box-shadow:var(--sh);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.adm-item-name{font-size:12px;font-weight:600;color:var(--tx)}
+.adm-item-sub{font-size:10px;color:var(--txl);margin-top:1px}
+.btn-del{padding:4px 10px;border:none;border-radius:8px;background:#fee2e2;color:#dc2626;font-size:11px;cursor:pointer;font-family:'Prompt',sans-serif;flex-shrink:0}
+.btn-edit-sm{padding:4px 10px;border:none;border-radius:8px;background:var(--pl);color:var(--pd);font-size:11px;cursor:pointer;font-family:'Prompt',sans-serif;flex-shrink:0}
+.btn-cancel-edit{width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:12px;font-family:'Prompt',sans-serif;font-size:13px;background:#f8fafc;color:var(--txl);cursor:pointer;margin-top:6px;display:none}
+.tbl-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--pl);margin-bottom:8px}
+.dtbl{width:100%;border-collapse:collapse;font-size:11px;min-width:380px}
+.dtbl th{background:var(--pl);color:var(--pd);padding:7px 9px;text-align:left;font-weight:600;white-space:nowrap;border-bottom:1px solid var(--p)}
+.dtbl td{padding:7px 9px;border-bottom:1px solid #eef2ff;color:var(--tx);vertical-align:top}
+.dtbl tr:nth-child(even) td{background:#f9f8ff}
+.dtbl tr:hover td{background:var(--pl)}
+.stat-mini{background:#fff;border-radius:12px;padding:12px;text-align:center;box-shadow:var(--sh)}
+.stat-mini-n{font-size:22px;font-weight:700;color:var(--pd)}
+.stat-mini-l{font-size:10px;color:var(--txl);margin-top:2px}
+.btn-csv{width:100%;padding:10px;border:2px solid var(--p);border-radius:11px;font-family:'Prompt',sans-serif;font-size:12px;font-weight:600;background:#fff;color:var(--pd);cursor:pointer;margin-top:8px}
+.hl-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;margin-bottom:14px;scrollbar-width:none}
+.hl-row::-webkit-scrollbar{display:none}
+.hl-card{min-width:160px;height:110px;border-radius:16px;flex-shrink:0;position:relative;overflow:hidden;cursor:pointer;background:var(--p)}
+.hl-card img{width:100%;height:100%;object-fit:cover;display:block}
+.hl-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.05) 0%,rgba(0,0,0,.6) 100%)}
+.hl-badge{position:absolute;top:8px;left:8px;background:rgba(255,255,255,.25);backdrop-filter:blur(4px);color:#fff;font-size:9px;font-weight:600;padding:2px 8px;border-radius:20px}
+.hl-name{position:absolute;bottom:8px;left:8px;right:8px;font-size:12px;font-weight:700;color:#fff;line-height:1.3}
+.hl-dist{font-size:9px;color:rgba(255,255,255,.8);margin-top:2px}
+.hl-no-img{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:38px}
+.field-sel{width:100%;padding:10px 12px;border:1.5px solid var(--pl);border-radius:12px;font-family:'Prompt',sans-serif;font-size:13px;background:var(--bg);color:var(--tx);outline:none}
+.adm-pw-bg{display:none;position:fixed;inset:0;background:rgba(20,40,70,.45);z-index:800;align-items:center;justify-content:center;padding:20px}
+.adm-pw-bg.show{display:flex}
+.adm-pw-card{background:#fff;border-radius:22px;padding:22px 18px;width:100%;max-width:320px}
+.btn-adm{width:100%;padding:12px;border:1.5px solid #e2e8f0;border-radius:12px;font-family:'Prompt',sans-serif;font-size:13px;font-weight:500;background:#f8fafc;color:var(--tx);cursor:pointer;margin-bottom:8px;text-align:left}
+.slot-tabs{display:flex;background:rgba(255,255,255,.25);border-radius:12px;padding:3px;gap:3px;margin-top:10px}
+.slot-tab{flex:1;padding:7px;border:none;border-radius:10px;font-family:'Prompt',sans-serif;font-size:12px;font-weight:600;background:transparent;color:rgba(255,255,255,.75);transition:all .2s;cursor:pointer}
+.slot-tab.active{background:#fff;color:#92400e}
+.shop-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
+.shop-card{background:#fff;border-radius:16px;padding:14px;text-align:center;box-shadow:var(--sh);transition:all .2s;position:relative;overflow:hidden}
+.shop-card:hover{transform:translateY(-2px)}
+.shop-card.owned{border:2px solid #22c55e}
+.shop-card.equipped{border:2.5px solid var(--gold)}
+.shop-emoji{font-size:38px;margin-bottom:6px;display:block;line-height:1}
+.shop-name{font-size:12px;font-weight:700;color:var(--tx);margin-bottom:2px}
+.shop-desc{font-size:10px;color:var(--txl);margin-bottom:8px}
+.shop-tag{position:absolute;top:8px;right:8px;font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px}
+.shop-tag.owned{background:#dcfce7;color:#15803d}
+.shop-tag.equipped{background:#fef9c3;color:#92400e}
+.btn-shop{width:100%;padding:8px;border:none;border-radius:10px;font-family:'Prompt',sans-serif;font-size:12px;font-weight:600;margin-top:4px;transition:all .2s;cursor:pointer}
+.btn-buy{background:var(--pl);color:var(--pd)}.btn-buy:hover{background:var(--p);color:#fff}
+.btn-equip{background:#fef9c3;color:#92400e}.btn-equip:hover{background:var(--gold);color:#fff}
+.btn-unequip,.btn-equipped-label{background:#f1f5f9;color:var(--txl)}
+.profile-hero{border-radius:22px;padding:22px 18px;margin-bottom:14px;color:#fff;text-align:center;background:linear-gradient(135deg,var(--p) 0%,var(--pd) 100%)}
+.prof-name{font-size:19px;font-weight:700;margin-top:8px}
+.prof-coins{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.2);padding:6px 18px;border-radius:20px;font-size:15px;font-weight:700;margin-top:8px}
+.stat-row{display:flex;gap:9px;margin-bottom:12px}
+.stat-card{flex:1;background:#fff;border-radius:14px;padding:13px;text-align:center;box-shadow:var(--sh)}
+.stat-n{font-size:20px;font-weight:700;color:var(--pd)}
+.stat-l{font-size:10px;color:var(--txl);margin-top:2px}
+.gallery-title{font-size:14px;font-weight:700;color:var(--tx);margin-bottom:10px}
+.gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.gallery-item{aspect-ratio:1;border-radius:12px;overflow:hidden;cursor:pointer;background:var(--pl);position:relative}
+.gallery-item img{width:100%;height:100%;object-fit:cover;display:block}
+.gallery-place{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.55));padding:6px 6px 4px;font-size:9px;color:#fff;font-weight:500}
+.gallery-empty{text-align:center;padding:28px;color:var(--txl);grid-column:1/-1;font-size:13px}
+.btn-logout{width:100%;padding:13px;background:#fee2e2;color:#dc2626;border:none;border-radius:12px;font-family:'Prompt',sans-serif;font-size:14px;font-weight:600;margin-top:8px;cursor:pointer}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(20,40,70,.3);z-index:500;align-items:flex-end;justify-content:center}
+.modal-bg.show{display:flex}
+.modal-sheet{background:#fff;border-radius:24px 24px 0 0;width:100%;max-height:92vh;overflow-y:auto;padding:20px 18px 30px;animation:sup .28s ease}
+@keyframes sup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:40px;height:4px;background:#dbeeff;border-radius:2px;margin:0 auto 16px}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:3px}
+.modal-sub{font-size:12px;color:var(--txl);margin-bottom:12px}
+.modal-hl{font-size:12px;color:#64748b;background:var(--bg);padding:9px 12px;border-radius:10px;line-height:1.6;margin-bottom:2px}
+.sec-title{font-size:13px;font-weight:700;color:var(--tx);margin:14px 0 7px}
+.nearby-card{display:flex;align-items:center;justify-content:space-between;background:var(--bg);border-radius:11px;padding:10px 12px;margin-bottom:7px}
+.nc-name{font-size:12px;font-weight:600;color:var(--tx)}
+.nc-dist{font-size:10px;color:var(--txl);margin-top:2px}
+.btn-nav-small{padding:6px 12px;background:var(--p);color:#fff;border:none;border-radius:9px;font-family:'Prompt',sans-serif;font-size:11px;font-weight:600;white-space:nowrap;cursor:pointer;text-decoration:none;display:inline-block}
+.trip-sum-box{background:var(--pl);border-radius:14px;padding:14px;margin-top:4px}
+.tl-item{display:flex;gap:10px;align-items:flex-start;margin-bottom:7px}
+.tl-dot{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+.tl-dot.s{background:#a7f3d0}.tl-dot.m{background:#fde68a}.tl-dot.e{background:var(--p)}
+.tl-line{width:2px;height:12px;background:#c7dff8;margin:-1px 0 -1px 11px}
+.tl-place{font-size:12px;font-weight:700;color:var(--tx)}
+.tl-detail{font-size:10px;color:#64748b;margin-top:1px}
+.btn-tl-add{border:none;width:26px;height:26px;border-radius:50%;background:var(--pl);color:var(--pd);font-size:15px;font-weight:700;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;margin-top:1px;line-height:1}
+.btn-tl-add.in{background:#dcfce7;color:#15803d;font-size:13px}
+.btn-tl-add:hover:not(.in){background:var(--p);color:#fff;transform:scale(1.1)}
+.btn-copy{width:100%;padding:11px;background:#fff;color:var(--pd);border:2px solid var(--p);border-radius:12px;font-family:'Prompt',sans-serif;font-size:13px;font-weight:700;margin-top:10px;cursor:pointer}
+.btn-go{display:block;width:100%;padding:13px;margin-top:7px;background:var(--p);color:#fff;border:none;border-radius:12px;font-family:'Prompt',sans-serif;font-size:13px;font-weight:700;text-align:center;cursor:pointer;text-decoration:none}
+.btn-close{width:100%;padding:12px;background:#f1f5f9;color:var(--tx);border:none;border-radius:12px;font-family:'Prompt',sans-serif;font-size:13px;margin-top:7px;cursor:pointer}
+.upload-area{border:2px dashed #c7dff8;border-radius:14px;padding:26px;text-align:center;cursor:pointer;background:var(--bg);transition:all .2s;margin:12px 0}
+.upload-area:hover,.upload-area.has-img{border-color:var(--p);background:var(--pl)}
+.upload-icon{font-size:34px;margin-bottom:6px}
+.upload-txt{font-size:13px;color:var(--txl)}
+#photoPreview{width:100%;border-radius:12px;max-height:180px;object-fit:cover;display:none;margin-bottom:10px}
+.empty-box{text-align:center;padding:36px 20px;color:var(--txl)}
+.empty-box .ei{font-size:44px;margin-bottom:10px}
+.empty-box p{font-size:13px}
+.page-hdr{margin-bottom:14px}
+.page-title{font-size:17px;font-weight:700}
+.page-sub{font-size:12px;color:var(--txl);margin-top:2px}
+@media(min-width:600px){.places-grid{grid-template-columns:repeat(2,1fr)}.shop-grid{grid-template-columns:repeat(3,1fr)}.gallery-grid{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:900px){.content{max-width:900px;margin:0 auto}.places-grid{grid-template-columns:repeat(3,1fr)}.shop-grid{grid-template-columns:repeat(4,1fr)}.bottom-nav{max-width:900px;left:50%;right:auto;transform:translateX(-50%);border-radius:16px 16px 0 0}.app-header{max-width:900px;margin:0 auto;border-radius:0}}
+@media(min-width:1200px){.content{max-width:1160px}.places-grid{grid-template-columns:repeat(4,1fr)}.bottom-nav{max-width:1160px}.shop-grid{grid-template-columns:repeat(5,1fr)}.gallery-grid{grid-template-columns:repeat(6,1fr)}}
+@media(min-width:1500px){.places-grid{grid-template-columns:repeat(5,1fr)}}
+.pkg-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;margin-bottom:12px;scrollbar-width:none}
+.pkg-row::-webkit-scrollbar{display:none}
+.pkg-card{background:#fff;border-radius:16px;padding:12px 12px 10px;min-width:170px;max-width:200px;box-shadow:var(--sh);flex-shrink:0;border-top:3px solid var(--p)}
+.pkg-name{font-size:12px;font-weight:700;color:var(--tx);margin-bottom:3px;line-height:1.3}
+.pkg-meta{font-size:10px;color:var(--txl);margin-bottom:3px}
+.pkg-places{font-size:10px;color:#64748b;margin-bottom:8px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.btn-pkg{width:100%;padding:6px;border:none;border-radius:9px;font-family:'Prompt',sans-serif;font-size:11px;font-weight:700;cursor:pointer;background:var(--pl);color:var(--pd);transition:all .18s}
+.btn-pkg.added{background:#22c55e;color:#fff}
+.btn-pkg:hover:not(.added){background:var(--p);color:#fff}
+</style>
+</head>
+<body>
+<div id="toast"></div>
+<div id="authScreen">
+  <div class="logo-wrap"><span class="logo-emoji">🌟</span><div class="logo-title">Moshi Go!</div><div class="logo-sub">สำรวจสระแก้ว · สะสมเหรียญ · แต่งมาสคอต</div></div>
+  <div class="auth-card">
+    <div class="auth-tabs"><button class="auth-tab active" onclick="switchAuthTab('login')">เข้าสู่ระบบ</button><button class="auth-tab" onclick="switchAuthTab('register')">สมัครสมาชิก</button></div>
+    <div id="loginForm">
+      <div class="field"><label>ชื่อผู้ใช้</label><input type="text" id="loginUser" placeholder="กรอกชื่อผู้ใช้"></div>
+      <div class="field"><label>รหัสผ่าน</label><input type="password" id="loginPass" placeholder="กรอกรหัสผ่าน" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <button class="btn-main" onclick="doLogin()">เข้าสู่ระบบ</button><div id="loginMsg"></div>
+    </div>
+    <div id="registerForm" style="display:none">
+      <div class="field"><label>ชื่อผู้ใช้ (อย่างน้อย 3 ตัว)</label><input type="text" id="regUser" placeholder="กรอกชื่อผู้ใช้"></div>
+      <div class="field"><label>รหัสผ่าน (อย่างน้อย 4 ตัว)</label><input type="password" id="regPass" placeholder="กรอกรหัสผ่าน"></div>
+      <div class="field"><label>ยืนยันรหัสผ่าน</label><input type="password" id="regConfirm" placeholder="กรอกซ้ำ" onkeydown="if(event.key==='Enter')doRegister()"></div>
+      <p style="text-align:center;font-size:12px;color:var(--txl);margin-bottom:8px">🎁 สมัครวันนี้รับฟรี <strong style="color:var(--gold)">100 เหรียญ!</strong></p>
+      <button class="btn-main" onclick="doRegister()">สมัครสมาชิก</button><div id="regMsg"></div>
+    </div>
+  </div>
+</div>
+<div id="mainApp">
+  <div class="app-header"><span class="app-logo">🌟 Moshi Go!</span><div class="coins-chip">🪙 <span id="coinsNum">0</span></div></div>
+  <div class="content">
+    <div class="tab-panel active" id="tab-places">
+      <div class="filter-label" style="margin-bottom:6px">⭐ ไฮไลท์แนะนำ</div>
+      <div class="hl-row" id="hlRow"></div>
+      <div class="filter-label" style="margin-bottom:6px">✈️ แพ็กเกจทริปสำเร็จรูป</div>
+      <div class="pkg-row" id="pkgRow"></div>
+      <div class="search-wrap"><span>🔍</span><input type="text" id="searchInput" placeholder="ค้นหาสถานที่, อำเภอ..." oninput="filterPlaces()"></div>
+      <div class="filter-group"><div class="filter-label">หมวดหมู่</div><div class="chips" id="catChips">
+        <div class="chip active" onclick="setCat('all',this)">🗂️ ทั้งหมด</div>
+        <div class="chip" onclick="setCat('ธรรมชาติ',this)">🌿 ธรรมชาติ</div>
+        <div class="chip" onclick="setCat('วัด',this)">🙏 วัด</div>
+        <div class="chip" onclick="setCat('คาเฟ่',this)">☕ คาเฟ่</div>
+        <div class="chip" onclick="setCat('แลนด์มาร์ค',this)">📸 แลนด์มาร์ค</div>
+        <div class="chip" onclick="setCat('OTOP',this)">🛍️ OTOP</div>
+        <div class="chip" onclick="setCat('เกษตร',this)">🌾 เกษตร</div>
+        <div class="chip" onclick="setCat('กีฬา',this)">🏃 กีฬา</div>
+      </div></div>
+      <div class="filter-group"><div class="filter-label">อำเภอ</div><div class="chips" id="distChips"><div class="chip chip-dist active" onclick="setDist('all',this)">📍 ทุกอำเภอ</div></div></div>
+      <div class="places-grid" id="placesGrid"></div>
+    </div>
+    <div class="tab-panel" id="tab-missions">
+      <div class="page-hdr"><div class="page-title">ภารกิจ 🎯</div><div class="page-sub">ถ่ายรูปเช็คอิน รับเหรียญ</div></div>
+      <div id="planNotice" class="plan-notice" style="display:none">🗺️ แสดงเฉพาะภารกิจในแผน — <span onclick="clearPlanFilter()" style="text-decoration:underline;cursor:pointer">ดูทั้งหมด</span></div>
+      <div id="missionsGrid"></div>
+    </div>
+    <div class="tab-panel" id="tab-plan">
+      <div class="plan-hero"><div class="plan-hero-title">🗺️ แผนทริปของฉัน</div><div class="plan-hero-sub">กดปุ่ม + ที่สถานที่เพื่อเพิ่มในแผน</div>
+        <div class="plan-stats">
+          <div class="plan-stat"><div class="plan-stat-n" id="planCount">0</div><div class="plan-stat-l">สถานที่</div></div>
+          <div class="plan-stat"><div class="plan-stat-n" id="planDist">0</div><div class="plan-stat-l">กม. รวม</div></div>
+        </div>
+      </div>
+      <div id="planList"><div class="empty-box"><div class="ei">🗺️</div><p>ยังไม่มีสถานที่ในแผน<br>กดปุ่ม + ที่หน้าสถานที่</p></div></div>
+      <div id="planRouteBox" style="display:none"><div class="plan-route-summary" id="planRoute"></div><button class="btn-copy-plan" onclick="copyPlan()">📋 คัดลอกแผนการเดินทาง</button></div>
+      <div id="planActionRow" style="display:none" class="plan-actions"><button class="btn-plan-clear" onclick="clearPlan()">🗑️ ล้างแผน</button><button class="btn-plan-go" onclick="navToFirst()">🧭 เริ่มเดินทาง</button></div>
+    </div>
+    <div class="tab-panel" id="tab-wardrobe">
+      <div class="wardrobe-top">
+        <div class="mascot-wrap" id="mascotMain">
+          <div class="slot-hat" id="slotHat"></div>
+          <div class="slot-glasses" id="slotGlasses"></div>
+          <div class="slot-bag" id="slotBag"></div>
+          <div class="bear-head"><div class="bear-ear l"></div><div class="bear-ear r"></div><div class="bear-eye l"></div><div class="bear-eye r"></div><div class="bear-cheek l"></div><div class="bear-cheek r"></div><div class="bear-snout"><div class="bear-nose"></div></div></div>
+          <div class="bear-body"><div class="bear-paw l"></div><div class="bear-paw r"></div></div>
+        </div>
+        <div class="wardrobe-label">มาสคอตของฉัน ✨</div>
+        <div class="slot-tabs"><button class="slot-tab active" onclick="setShopSlot('hat',this)">🎩 หมวก</button><button class="slot-tab" onclick="setShopSlot('glasses',this)">👓 แว่น</button><button class="slot-tab" onclick="setShopSlot('bag',this)">🎒 ของ</button></div>
+      </div>
+      <div id="shopGrid" class="shop-grid"></div>
+    </div>
+    <div class="tab-panel" id="tab-profile">
+      <div class="profile-hero">
+        <div style="transform:scale(0.65);transform-origin:top center;height:148px;overflow:hidden">
+          <div class="mascot-wrap" id="mascotProfile">
+            <div class="slot-hat" id="pSlotHat"></div><div class="slot-glasses" id="pSlotGlasses"></div><div class="slot-bag" id="pSlotBag"></div>
+            <div class="bear-head"><div class="bear-ear l"></div><div class="bear-ear r"></div><div class="bear-eye l"></div><div class="bear-eye r"></div><div class="bear-cheek l"></div><div class="bear-cheek r"></div><div class="bear-snout"><div class="bear-nose"></div></div></div>
+            <div class="bear-body"><div class="bear-paw l"></div><div class="bear-paw r"></div></div>
+          </div>
+        </div>
+        <div class="prof-name" id="profName">-</div>
+        <div class="prof-coins">🪙 <span id="profCoins">0</span> เหรียญ</div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-card"><div class="stat-n" id="stTotal">130</div><div class="stat-l">สถานที่</div></div>
+        <div class="stat-card"><div class="stat-n" id="stDone">0</div><div class="stat-l">ภารกิจสำเร็จ</div></div>
+        <div class="stat-card"><div class="stat-n">130</div><div class="stat-l">ภารกิจทั้งหมด</div></div>
+      </div>
+      <div class="gallery-title">📸 ความทรงจำของฉัน</div>
+      <div class="gallery-grid" id="galleryGrid"><div class="gallery-empty">ยังไม่มีรูป ออกไปทำภารกิจกันเถอะ!</div></div>
+      <div style="margin-top:16px">
+        <button class="btn-adm" onclick="openAdminAuth()">⚙️ จัดการข้อมูล (Admin)</button>
+        <button class="btn-logout" onclick="doLogout()">🚪 ออกจากระบบ</button>
+      </div>
+    </div>
+    <div class="tab-panel" id="tab-shops">
+      <div class="page-hdr"><div class="page-title">ร้านค้าชุมชน 🏪</div><div class="page-sub">แลกเหรียญรับสิทธิ์พิเศษจากร้านท้องถิ่น</div></div>
+      <div id="localShopsGrid"></div>
+    </div>
+    <div class="tab-panel" id="tab-admin">
+      <div class="page-hdr"><div class="page-title">⚙️ Admin Panel</div><div class="page-sub">เพิ่ม / ลบ สถานที่และร้านค้า</div></div>
+      <div class="auth-tabs" style="margin-bottom:12px" id="admSubTabs">
+        <button class="auth-tab active" onclick="setAdmTab('places',this)">🗺️ สถานที่</button>
+        <button class="auth-tab" onclick="setAdmTab('shops',this)">🏪 ร้านค้า</button>
+        <button class="auth-tab" onclick="setAdmTab('data',this)">📊 ข้อมูล</button>
+      </div>
+      <div id="adm-pc">
+        <div id="adm-pl-list"></div>
+        <div class="adm-form">
+          <div style="font-size:12px;font-weight:700;margin-bottom:10px;color:var(--pd)">+ เพิ่มสถานที่ใหม่</div>
+          <div class="field"><label>ชื่อสถานที่ *</label><input id="af-name" type="text" placeholder="เช่น คาเฟ่ริมน้ำใหม่"></div>
+          <div class="field"><label>อำเภอ *</label><input id="af-dist" type="text" placeholder="อำเภอเมืองสระแก้ว"></div>
+          <div class="field"><label>หมวดหมู่</label>
+            <select id="af-cat" class="field-sel">
+              <option>ร้านอาหารและคาเฟ่</option><option>วัดและสถานที่ทางศาสนา</option>
+              <option>แหล่งท่องเที่ยวธรรมชาติ</option><option>จุดชมวิวและแลนด์มาร์ค</option>
+              <option>สินค้า OTOP</option><option>แหล่งท่องเที่ยวเชิงเกษตร</option>
+              <option>สถานที่ออกกำลังกายและนันทนาการ</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:8px">
+            <div class="field" style="flex:1"><label>Latitude</label><input id="af-lat" type="number" step="any" placeholder="13.82"></div>
+            <div class="field" style="flex:1"><label>Longitude</label><input id="af-lon" type="number" step="any" placeholder="102.06"></div>
+          </div>
+          <div class="field"><label>ไฮไลท์</label><input id="af-hl" type="text" placeholder="รายละเอียดสั้นๆ น่าสนใจ..."></div>
+          <div class="field"><label>URL รูป (ไม่บังคับ)</label><input id="af-img" type="text" placeholder="img/myplace.jpg หรือ URL รูป"></div>
+          <button class="btn-main" id="af-submit-btn" onclick="submitAddPlace()">เพิ่มสถานที่</button>
+          <button class="btn-cancel-edit" id="af-cancel-btn" onclick="cancelEditPlace()">✕ ยกเลิกการแก้ไข</button>
+          <div id="af-msg"></div>
+        </div>
+      </div>
+      <div id="adm-sc" style="display:none">
+        <div id="adm-sh-list"></div>
+        <div class="adm-form">
+          <div style="font-size:12px;font-weight:700;margin-bottom:10px;color:var(--pd)">+ เพิ่มร้านค้าใหม่</div>
+          <div class="field"><label>ชื่อร้านค้า *</label><input id="sf-name" type="text" placeholder="ชื่อร้านค้า"></div>
+          <div class="field"><label>หมวดหมู่</label><input id="sf-cat" type="text" placeholder="คาเฟ่ / OTOP / อาหาร..."></div>
+          <div class="field"><label>รายละเอียด</label><input id="sf-desc" type="text" placeholder="บอกรายละเอียดร้านสั้นๆ"></div>
+          <div class="field"><label>ส่วนลดที่ได้</label><input id="sf-disc" type="text" placeholder="เช่น ลด 20 บาท, เครื่องดื่ม 1 แก้ว"></div>
+          <div class="field"><label>เหรียญที่ต้องใช้</label><input id="sf-coins" type="number" placeholder="50" min="1"></div>
+          <div style="display:flex;gap:8px">
+            <div class="field" style="flex:1"><label>Latitude (ไม่บังคับ)</label><input id="sf-lat" type="number" step="any" placeholder="13.82"></div>
+            <div class="field" style="flex:1"><label>Longitude (ไม่บังคับ)</label><input id="sf-lon" type="number" step="any" placeholder="102.06"></div>
+          </div>
+          <button class="btn-main" id="sf-submit-btn" onclick="submitAddShop()">เพิ่มร้านค้า</button>
+          <button class="btn-cancel-edit" id="sf-cancel-btn" onclick="cancelEditShop()">✕ ยกเลิกการแก้ไข</button>
+          <div id="sf-msg"></div>
+        </div>
+      </div>
+      <div id="adm-dc" style="display:none">
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px">
+          <div class="stat-mini"><div class="stat-mini-n" id="stat-users">-</div><div class="stat-mini-l">ผู้ใช้ทั้งหมด</div></div>
+          <div class="stat-mini"><div class="stat-mini-n" id="stat-places">-</div><div class="stat-mini-l">สถานที่ทั้งหมด</div></div>
+          <div class="stat-mini"><div class="stat-mini-n" id="stat-missions-done">-</div><div class="stat-mini-l">ภารกิจสำเร็จ</div></div>
+          <div class="stat-mini"><div class="stat-mini-n" id="stat-reds">-</div><div class="stat-mini-l">คูปองแลกแล้ว</div></div>
+        </div>
+        <div class="chips" id="dataTypeChips" style="margin-bottom:10px">
+          <div class="chip active" onclick="switchDataType('users',this)">👥 ผู้ใช้</div>
+          <div class="chip" onclick="switchDataType('places',this)">🗺️ สถานที่</div>
+          <div class="chip" onclick="switchDataType('missions',this)">🎯 ภารกิจ</div>
+          <div class="chip" onclick="switchDataType('redemptions',this)">🎟️ คูปอง</div>
+        </div>
+        <div id="adm-data-table"><div class="empty-box" style="padding:12px"><p>กำลังโหลด...</p></div></div>
+        <button class="btn-csv" onclick="exportCurrentCSV()">📥 ดาวน์โหลด CSV (Excel ได้เลย)</button>
+      </div>
+    </div>
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-btn active" onclick="switchTab('places',this)"><span class="ni">🗺️</span><span class="nl">สถานที่</span></button>
+    <button class="nav-btn" onclick="switchTab('missions',this)"><span class="ni">🎯</span><span class="nl">ภารกิจ</span></button>
+    <button class="nav-btn" onclick="switchTab('plan',this)"><span class="ni">📋</span><span class="nl">แผนทริป</span></button>
+    <button class="nav-btn" onclick="switchTab('wardrobe',this)"><span class="ni">🧳</span><span class="nl">แต่งตัว</span></button>
+    <button class="nav-btn" onclick="switchTab('profile',this)"><span class="ni">👤</span><span class="nl">โปรไฟล์</span></button>
+    <button class="nav-btn" onclick="switchTab('shops',this)"><span class="ni">🏪</span><span class="nl">ร้านค้า</span></button>
+    <button class="nav-btn" id="adminNavBtn" style="display:none" onclick="switchTab('admin',this)"><span class="ni">⚙️</span><span class="nl">Admin</span></button>
+  </div>
+</div>
+<div class="modal-bg" id="tripModal" onclick="closeTripModal(event)">
+  <div class="modal-sheet"><div class="modal-handle"></div>
+    <div class="modal-title" id="tripName">-</div>
+    <div class="modal-sub" id="tripDist">-</div>
+    <div class="modal-hl" id="tripHl"></div>
+    <div class="sec-title">⚡ แวะระหว่างทาง (รัศมี 5 กม.)</div>
+    <div id="nearbyList"></div>
+    <div class="sec-title">🗓️ สรุปการเดินทาง</div>
+    <div class="trip-sum-box" id="tripTimeline"></div>
+    <button class="btn-copy" onclick="copyTrip()">📋 คัดลอกแผน</button>
+    <a class="btn-go" id="btnGo" href="#" target="_blank">🗺️ นำทางด้วย Google Maps</a>
+    <button class="btn-close" onclick="closeTripModal()">ปิด</button>
+  </div>
+</div>
+<div class="modal-bg" id="missionModal" onclick="closeMissionModal(event)">
+  <div class="modal-sheet"><div class="modal-handle"></div>
+    <div class="modal-title" id="mmPlace">-</div>
+    <div class="modal-sub" id="mmTask">-</div>
+    <div id="mmDoneAlert" style="display:none;background:#dcfce7;color:#15803d;padding:10px 14px;border-radius:10px;font-size:12px;margin-bottom:10px">✅ ทำภารกิจนี้สำเร็จแล้ว!</div>
+    <div id="mmUpload">
+      <img id="photoPreview" src="" alt="">
+      <div class="upload-area" onclick="triggerUpload()" id="uploadArea"><div class="upload-icon">📷</div><div class="upload-txt">กดเพื่อเลือกรูปภาพ</div></div>
+      <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="previewPhoto(event)">
+      <div style="background:var(--bg);padding:9px 12px;border-radius:10px;font-size:11px;color:var(--txl);margin-bottom:8px">🪙 ทำสำเร็จรับ <strong style="color:var(--gold)">50 เหรียญ</strong></div>
+      <button class="btn-main" onclick="doSubmitMission()" id="btnSubmit" disabled>ส่งรูปภาพ 🚀</button>
+    </div>
+    <div id="mmSuccess" style="display:none;text-align:center;padding:20px 0"><div style="font-size:52px;margin-bottom:8px">🎉</div><div style="font-size:16px;font-weight:700">ภารกิจสำเร็จ!</div><div style="font-size:12px;color:var(--txl);margin-top:4px">+50 เหรียญเพิ่มแล้ว</div></div>
+    <button class="btn-close" onclick="closeMissionModal()">ปิด</button>
+  </div>
+</div>
+<div class="cp-bg" id="couponModal">
+  <div class="cp-card">
+    <div style="font-size:36px;margin-bottom:8px">🎟️</div>
+    <div class="cp-shop" id="cpShopName">-</div>
+    <div class="cp-disc" id="cpDiscount">-</div>
+    <div class="cp-box">
+      <div class="cp-lbl">รหัสคูปอง — แสดงให้ร้านค้าดู</div>
+      <div class="cp-code" id="cpCode">-</div>
+      <div class="cp-info" id="cpInfo"></div>
+    </div>
+    <button class="btn-cp-copy" onclick="copyCoupon()">📋 คัดลอกรหัส</button>
+    <button class="btn-cp-close" onclick="closeCoupon()">ปิด</button>
+  </div>
+</div>
+<div class="adm-pw-bg" id="admPwModal">
+  <div class="adm-pw-card">
+    <div style="font-size:15px;font-weight:700;text-align:center;margin-bottom:4px">⚙️ Admin Panel</div>
+    <div style="font-size:12px;color:var(--txl);text-align:center;margin-bottom:14px">ใส่รหัสผ่านเพื่อจัดการข้อมูล</div>
+    <div class="field"><input type="password" id="admPwInput" placeholder="รหัสผ่าน Admin" onkeydown="if(event.key==='Enter')checkAdminPw()"></div>
+    <button class="btn-main" onclick="checkAdminPw()">เข้าสู่ระบบ</button>
+    <button class="btn-close" onclick="document.getElementById('admPwModal').classList.remove('show')" style="margin-top:7px">ยกเลิก</button>
+    <div id="admPwMsg" style="margin-top:8px"></div>
+  </div>
+</div>
+<script>
+var PLACES=[
+{id:'LOC001',name:'อุทยานแห่งชาติปางสีดา',district:'อำเภอเมืองสระแก้ว',category:'แหล่งท่องเที่ยวธรรมชาติ',type:'Main',lat:13.983751,lon:102.203564,highlights:'จุดชมผีเสื้อและน้ำตกปางสีดา สวรรค์ของคนรักธรรมชาติ เทศกาลชมผีเสื้อหลากสายพันธุ์'},
+{id:'LOC002',name:'น้ำตกปางสีดา',district:'อำเภอเมืองสระแก้ว',category:'แหล่งท่องเที่ยวธรรมชาติ',type:'Main',lat:13.993604,lon:102.205890,highlights:'แหล่งท่องเที่ยวธรรมชาติยอดฮิต เล่นน้ำตกเย็นสบาย จุดดูผีเสื้อบินรอบตัว'},
+{id:'LOC003',name:'จุดชมวิวหุบเขาห้วยโสมง',district:'อำเภอเมืองสระแก้ว',category:'แหล่งท่องเที่ยวธรรมชาติ',type:'Main',lat:14.078437,lon:102.261241,highlights:'จุดชมวิวทิวทัศน์ธรรมชาติ ผืนป่า อ่างเก็บน้ำอันกว้างใหญ่ ลมพัดเย็นสบาย'},
+{id:'LOC004',name:'วัดเขาสิงโต',district:'อำเภอเมืองสระแก้ว',category:'วัดและสถานที่ทางศาสนา',type:'Sub',lat:13.989657,lon:102.008121,highlights:'ขึ้นไปกราบรอยพระพุทธบาท ไหว้พระขอพร แวะสักการะองค์พญานาคในถ้ำวังนาคา'},
+{id:'LOC005',name:'วัดสระแก้ว พระอารามหลวง',district:'อำเภอเมืองสระแก้ว',category:'วัดและสถานที่ทางศาสนา',type:'Sub',lat:13.819295,lon:102.067119,highlights:'วัดสำคัญใจกลางเมือง แวะกราบขอพรหลวงพ่อทอง ชมโบราณวัตถุที่พิพิธภัณฑ์พื้นบ้าน'},
+{id:'LOC006',name:'วัดศาลาลำดวน',district:'อำเภอเมืองสระแก้ว',category:'วัดและสถานที่ทางศาสนา',type:'Sub',lat:13.878697,lon:102.005980,highlights:'อุโบสถและเสารั้วปูนปั้นลายต้นไม้จำลองแปลกตา กราบหลวงพ่อมงคลเศรษฐีเพื่อความเฮง'},
+{id:'LOC007',name:'วัดราษฎร์นิรมิตร(บ้านแก้ง)',district:'อำเภอเมืองสระแก้ว',category:'วัดและสถานที่ทางศาสนา',type:'Main',lat:13.917452,lon:101.963539,highlights:'กราบรูปเหมือนสมเด็จโตองค์ใหญ่ และรูปปั้นพญานาคริมน้ำ บรรยากาศสงบสายบุญต้องแวะ'},
+{id:'LOC008',name:'วัดโคกเจริญสุข (วัดโคกอีหลง)',district:'อำเภอเมืองสระแก้ว',category:'วัดและสถานที่ทางศาสนา',type:'Sub',lat:13.905191,lon:102.111935,highlights:'ชมพระอุโบสถสถาปัตยกรรมไทยอันงดงาม กราบองค์พระแม่ธรณีบีบมวยผมศักดิ์สิทธิ์'},
+{id:'LOC009',name:'วัดหนองกะพ้อ',district:'อำเภอเมืองสระแก้ว',category:'วัดและสถานที่ทางศาสนา',type:'Sub',lat:12.781474,lon:101.700375,highlights:'สักการะสรีรสังขารหลวงพ่อธีรวัฒน์ และหลวงพ่อใหญ่ศักดิ์สิทธิ์ สถานที่ปฏิบัติธรรมร่มรื่น'},
+{id:'LOC010',name:'วัดท่าเกษม',district:'อำเภอเมืองสระแก้ว',category:'วัดและสถานที่ทางศาสนา',type:'Sub',lat:13.787591,lon:102.166286,highlights:'ร่วมทำบุญตักบาตรเทโวช่วงเทศกาล ชมพระอุโบสถเก่าแก่ศูนย์รวมจิตใจชุมชน'},
+{id:'LOC011',name:'หลวงพ่อพระโลกธาตุหยกขาว',district:'อำเภอเมืองสระแก้ว',category:'วัดและสถานที่ทางศาสนา',type:'Main',lat:13.848973,lon:102.055607,highlights:'พระพุทธรูปหยกขาวปางโลกธาตุขนาดใหญ่ สวยงามสะดุดตา ท่ามกลางธรรมชาติอันเงียบสงบ'},
+{id:'LOC012',name:'อุทยานหลวงปู่สด พญานาค 4 ตระกูล',district:'อำเภอเมืองสระแก้ว',category:'วัดและสถานที่ทางศาสนา',type:'Main',lat:14.006859,lon:101.928232,highlights:'พิกัดสายมู! รูปปั้นพญานาค 4 ตระกูลสุดอลังการกลางบึงน้ำ นิยมขอพรโชคลาภเงินทอง'},
+{id:'LOC013',name:'สกายวอร์ควัดเขาสิงโต',district:'อำเภอเมืองสระแก้ว',category:'จุดชมวิวและแลนด์มาร์ค',type:'Main',lat:13.990074,lon:102.006769,highlights:'สกายวอล์คกระจกแห่งแรกของภาคตะวันออก ชมวิว 360 องศา เดินขึ้นบันได 300 ขั้น'},
+{id:'LOC014',name:'ศาลหลักเมืองสระแก้ว',district:'อำเภอเมืองสระแก้ว',category:'จุดชมวิวและแลนด์มาร์ค',type:'Main',lat:13.802647,lon:102.117651,highlights:'สถานที่ศักดิ์สิทธิ์คู่บ้านคู่เมือง กราบไหว้เพื่อความปลอดภัยและเป็นสิริมงคล'},
+{id:'LOC015',name:'สวนสาธารณะสระแก้วสระขวัญ',district:'อำเภอเมืองสระแก้ว',category:'จุดชมวิวและแลนด์มาร์ค',type:'Sub',lat:13.821012,lon:102.057661,highlights:'สระน้ำโบราณประวัติศาสตร์ พิกัดพักผ่อนหย่อนใจริมน้ำ ร่มรื่น จัดงานประเพณีเมือง'},
+{id:'LOC016',name:'ตลาดเมืองแก้ว',district:'อำเภอเมืองสระแก้ว',category:'จุดชมวิวและแลนด์มาร์ค',type:'Sub',lat:13.823911,lon:102.065223,highlights:'ตลาดนัดสระแก้ว ศูนย์รวมของกินสตรีทฟู้ดท้องถิ่นราคาย่อมเยา จุดแวะช้อปปิ้งของอร่อย'},
+{id:'LOC017',name:'สนามกีฬากลางจังหวัดสระแก้ว',district:'อำเภอเมืองสระแก้ว',category:'สถานที่ออกกำลังกายและนันทนาการ',type:'Sub',lat:13.824156,lon:102.069862,highlights:'สถานที่ออกกำลังกาย ศูนย์รวมการจัดงานกิจกรรมและงานรื่นเริงประจำจังหวัด'},
+{id:'LOC018',name:'สนามกีฬาเทศบาลเมืองสระแก้ว',district:'อำเภอเมืองสระแก้ว',category:'สถานที่ออกกำลังกายและนันทนาการ',type:'Sub',lat:13.820792,lon:102.058011,highlights:'สวนสาธารณะใจกลางเมือง สถานที่ออกกำลังกาย ลานกิจกรรมชุมชน'},
+{id:'LOC019',name:'สนามกอล์ฟบูรพา',district:'อำเภอเมืองสระแก้ว',category:'สถานที่ออกกำลังกายและนันทนาการ',type:'Main',lat:13.791167,lon:102.141969,highlights:'สนามกอล์ฟระดับมาตรฐาน กิจกรรมนันทนาการในค่ายทหาร ดึงดูดนักกอล์ฟและผู้รักกีฬา'},
+{id:'LOC020',name:'นมคูล Nom-Cool Fresh Milk 100%',district:'อำเภอเมืองสระแก้ว',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.805013,lon:102.077564,highlights:'คาเฟ่นมสดแท้ ของหวานและเครื่องดื่มดับร้อน พิกัดเช็กอินสายกินและวัยรุ่นสระแก้ว'},
+{id:'LOC021',name:'ร้านอาหารจันทร์มณี By ลอยนวล',district:'อำเภอเมืองสระแก้ว',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.811330,lon:102.082594,highlights:'พิกัดกินดื่มบรรยากาศดี เมนูอาหารไทยและอีสานรสจัดจ้าน จุดนัดพบสำหรับครอบครัว'},
+{id:'LOC022',name:'Fieldter Cafe',district:'อำเภอเมืองสระแก้ว',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.828191,lon:102.061748,highlights:'ฟิลเตอร์คาเฟ่ ดีไซน์สวยถ่ายรูปปัง เมนูเครื่องดื่มและเบเกอรีโฮมเมด'},
+{id:'LOC023',name:'Cruise Away Sa Kaeo',district:'อำเภอเมืองสระแก้ว',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.770487,lon:102.081697,highlights:'คาเฟ่สระแก้ว ร้านกาแฟบรรยากาศดี ดีไซน์สวยถ่ายรูปปัง เมนูเครื่องดื่มและเบเกอรี่'},
+{id:'LOC024',name:'holly home cafe',district:'อำเภอเมืองสระแก้ว',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.818573,lon:102.074433,highlights:'คาเฟ่สไตล์โฮมมี่อบอุ่น บรรยากาศสวนสวยร่มรื่น มุมถ่ายรูปมินิมอล'},
+{id:'LOC025',name:'หมูจุ่ม + ยำ หลังโรงพยาบาลสระแก้ว',district:'อำเภอเมืองสระแก้ว',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.818597,lon:102.075065,highlights:'ร้านหมูจุ่มยำรสเด็ดสระแก้ว พิกัดสตรีทฟู้ดมื้อเย็นราคาสบายกระเป๋า'},
+{id:'LOC026',name:'R-Moxy BAR',district:'อำเภอเมืองสระแก้ว',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.833219,lon:102.050975,highlights:'บาร์นั่งชิลยามค่ำคืน พิกัดกินดื่มสังสรรค์ ดนตรีสดเพราะบรรยากาศดี'},
+{id:'LOC027',name:'Coffee Hills Cafe',district:'อำเภอเมืองสระแก้ว',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.808893,lon:102.099445,highlights:'คาเฟ่บรรยากาศดีวิวสวย จุดแวะพักระหว่างทาง เมนูเครื่องดื่มเข้มข้นและเบเกอรีหลากหลาย'},
+{id:'LOC028',name:'หอประชุมที่ว่าการอำเภอเมืองสระแก้ว',district:'อำเภอเมืองสระแก้ว',category:'สินค้า OTOP',type:'Sub',lat:13.815312,lon:102.071537,highlights:'ศูนย์รวมงานแสดงสินค้าชุมชน ลานกิจกรรมและงานนิทรรศการ พิกัดช้อปของดีจังหวัด'},
+{id:'LOC029',name:'บ้านคลองอาราง',district:'อำเภอเมืองสระแก้ว',category:'แหล่งท่องเที่ยวเชิงเกษตร',type:'Sub',lat:14.002589,lon:101.956859,highlights:'ชุมชนท่องเที่ยวเกษตรนวัตวิถี เรียนรู้วิถีชาวท้องถิ่น มีสินค้า OTOP อีกมากมาย'},
+{id:'LOC030',name:'คอกม้าบึงลำดวน สอนขี่ม้า',district:'อำเภอเมืองสระแก้ว',category:'แหล่งท่องเที่ยวเชิงเกษตร',type:'Sub',lat:13.866175,lon:102.010865,highlights:'สถานที่สอนขี่ม้า กิจกรรมท่องเที่ยวเชิงเกษตรที่น่าสนใจสำหรับครอบครัว'},
+{id:'LOC031',name:'โครงการโรงเรียนกาสรกสิวิทย์',district:'อำเภอเมืองสระแก้ว',category:'แหล่งท่องเที่ยวเชิงเกษตร',type:'Sub',lat:13.860083,lon:102.020449,highlights:'โครงการพระราชดำริสระแก้ว ศูนย์การเรียนรู้กสิกรรมธรรมชาติ แหล่งท่องเที่ยวเชิงเกษตร'},
+{id:'LOC032',name:'อุทยานแห่งชาติตาพระยา',district:'อำเภอตาพระยา',category:'แหล่งท่องเที่ยวธรรมชาติ',type:'Main',lat:14.131215,lon:102.585805,highlights:'มรดกโลกดงพญาเย็นเขาใหญ่ จุดชมวิวผาแดง เส้นทางธรรมชาติ ลานกางเต็นท์สายลุย'},
+{id:'LOC033',name:'ละลุ',district:'อำเภอตาพระยา',category:'แหล่งท่องเที่ยวธรรมชาติ',type:'Main',lat:14.053213,lon:102.575133,highlights:'แกรนด์แคนยอนเมืองไทย ปรากฏการณ์ทางธรรมชาติเสาดินลวดลายแปลกตา Unseen Thailand'},
+{id:'LOC034',name:'ปราสาทเขาโล้น',district:'อำเภอตาพระยา',category:'แหล่งท่องเที่ยวธรรมชาติ',type:'Main',lat:14.057562,lon:102.696255,highlights:'ปราสาทหินโบราณบนยอดเขา ทับหลังปราสาทเขาโล้น เส้นทางท่องเที่ยวประวัติศาสตร์'},
+{id:'LOC035',name:'ตลาดนัดชุมชน โคกอีโด่ย',district:'อำเภอตาพระยา',category:'สินค้า OTOP',type:'Sub',lat:14.121123,lon:102.674280,highlights:'ตลาดนัดชุมชน สินค้าท้องถิ่น ของป่าตามฤดูกาล อาหารพื้นบ้าน ราคาย่อมเยา'},
+{id:'LOC036',name:'วัดตาพระยา',district:'อำเภอตาพระยา',category:'วัดและสถานที่ทางศาสนา',type:'Sub',lat:14.004425,lon:102.811460,highlights:'วัดเก่าแก่คู่บ้านคู่เมือง สถาปัตยกรรมท้องถิ่นที่สงบและร่มรื่น พิกัดสายบุญ'},
+{id:'LOC037',name:'วัดพุทธรัตนาราม',district:'อำเภอตาพระยา',category:'วัดและสถานที่ทางศาสนา',type:'Sub',lat:14.099835,lon:102.807684,highlights:'ศาสนสถานเพื่อการปฏิบัติธรรม บรรยากาศสงบร่มรื่นอบอวลด้วยธรรมชาติ'},
+{id:'LOC038',name:'วัดพรหมสุวรรณ ตาพระยา',district:'อำเภอตาพระยา',category:'วัดและสถานที่ทางศาสนา',type:'Sub',lat:13.996100,lon:102.806441,highlights:'วัดปฏิบัติธรรม บรรยากาศสงบร่มรื่น ศูนย์รวมจิตใจและพิกัดสร้างบุญของชาวบ้าน'},
+{id:'LOC039',name:'Mee-Shi Cafe & Restaurant',district:'อำเภอตาพระยา',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:14.037445,lon:102.801069,highlights:'คาเฟ่และร้านอาหารสไตล์โมเดิร์น เมนูอาหารฟิวชัน เครื่องดื่มชา-กาแฟ และเบเกอรี่'},
+{id:'LOC040',name:'42 อู้ฟู่คาเฟ่',district:'อำเภอตาพระยา',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.992060,lon:102.798654,highlights:'คาเฟ่ดีไซน์สวยสไตล์มินิมอลโปร่งสบาย เมนูเครื่องดื่ม ชา กาแฟเข้มข้น และเบเกอรีอบสด'},
+{id:'LOC041',name:'เฮือนตาพระยา',district:'อำเภอตาพระยา',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:14.006042,lon:102.809722,highlights:'ร้านอาหารและคาเฟ่บรรยากาศดีอบอุ่น เมนูอาหารไทย อาหารอีสานรสเด็ด'},
+{id:'LOC042',name:'Lanta cat cafe',district:'อำเภอตาพระยา',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.978167,lon:102.764439,highlights:'คาเฟ่แมวสระแก้ว ร้านกาแฟบรรยากาศอบอุ่น พร้อมแก๊งน้องแมวเหมียวสุดน่ารัก'},
+{id:'LOC043',name:'posh coffee',district:'อำเภอตาพระยา',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:14.035769,lon:102.827050,highlights:'ร้านกาแฟบรรยากาศดี เครื่องดื่มชา กาแฟสดรสชาติเข้มข้น จุดแวะพักรถยอดนิยม'},
+{id:'LOC044',name:'อุทยานประวัติศาสตร์สด๊กก๊อกธม',district:'อำเภอโคกสูง',category:'แหล่งท่องเที่ยวธรรมชาติ',type:'Main',lat:13.843835,lon:102.737878,highlights:'ปราสาทหินขอมที่ใหญ่ที่สุดในภาคตะวันออก สถาปัตยกรรมขอมศิลปะแบบคลัง-บาปวน'},
+{id:'LOC045',name:'บ้านเค้กตังเม',district:'อำเภอโคกสูง',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.863942,lon:102.586406,highlights:'คาเฟ่และเบเกอรีโฮมเมด มีสวนองุ่นเดินเที่ยวถ่ายรูปสวยๆ บรรยากาศร่มรื่น'},
+{id:'LOC046',name:'Escape house',district:'อำเภอโคกสูง',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.863000,lon:102.590000,highlights:'คาเฟ่เปิดใหม่สไตล์นอร์ดิกมินิมอล บรรยากาศโปร่งสบายล้อมรอบด้วยธรรมชาติ'},
+{id:'LOC047',name:'Baan Cafe',district:'อำเภอโคกสูง',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.887941,lon:102.587941,highlights:'คาเฟ่สไตล์นอร์ดิกมินิมอล บรรยากาศโปร่งสบาย บริการเครื่องดื่มชา กาแฟรสชาติพรีเมียม'},
+{id:'LOC048',name:'Dok-Bua Cafe',district:'อำเภอโคกสูง',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.788995,lon:102.711644,highlights:'ดอกบัวคาเฟ่ ร้านกาแฟและคาเฟ่บรรยากาศสบายๆ บริการเครื่องดื่มชา กาแฟ น้ำผลไม้'},
+{id:'LOC049',name:'Wat Cafe 1324',district:'อำเภอโคกสูง',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.789224,lon:102.711838,highlights:'วัฒน์คาเฟ่ ร้านกาแฟและคาเฟ่ในอำเภอโคกสูง บรรยากาศสบายๆ เป็นกันเอง'},
+{id:'LOC050',name:'มีโชค Coffee&Cafe',district:'อำเภอโคกสูง',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.789761,lon:102.711693,highlights:'ร้านกาแฟและคาเฟ่ บริการเครื่องดื่มชา กาแฟสดรสชาติเข้มข้น จุดแวะพักเติมความสดชื่น'},
+{id:'LOC051',name:'กะเพราคาเฟ่',district:'อำเภอโคกสูง',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.767979,lon:102.649802,highlights:'ร้านอาหารและคาเฟ่ผสมผสาน เมนูผัดกะเพราสูตรเด็ดรสจัดจ้าน คาเฟ่ชิลๆ บริการเครื่องดื่ม'},
+{id:'LOC052',name:'ซูดานคาเฟ่',district:'อำเภอโคกสูง',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.849012,lon:102.642206,highlights:'คาเฟ่และร้านกาแฟในอำเภอโคกสูง บรรยากาศเป็นกันเองและร่มรื่น บริการเครื่องดื่มหลากหลาย'},
+{id:'LOC053',name:'ร้านแสนเวียงไหมไทย',district:'อำเภอโคกสูง',category:'สินค้า OTOP',type:'Sub',lat:13.788355,lon:102.714202,highlights:'แหล่งจำหน่ายผ้าไหมไทยคุณภาพดี ผ้าพื้นเมือง ผ้าทอมืออันประณีต ของฝากระดับพรีเมียม'},
+{id:'LOC054',name:'พันไหมเค้ก (Panmai cake)',district:'อำเภอโคกสูง',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.839911,lon:102.625800,highlights:'ร้านเบเกอรีและเค้กโฮมเมด เค้กวันเกิดรสชาติกลมกล่อม พร้อมเครื่องดื่มชา กาแฟสด'},
+{id:'LOC055',name:'วัดโคกสูง',district:'อำเภอโคกสูง',category:'วัดและสถานที่ทางศาสนา',type:'Sub',lat:13.807501,lon:102.703656,highlights:'วัดสวยศูนย์รวมจิตใจและศาสนสถานสำคัญของชาวอำเภอโคกสูง บรรยากาศร่มรื่น สงบเงียบ'},
+{id:'LOC056',name:'วัดหนองม่วง',district:'อำเภอโคกสูง',category:'วัดและสถานที่ทางศาสนา',type:'Sub',lat:13.852302,lon:102.584444,highlights:'วัดเก่าแก่และศาสนสถานสำคัญในตำบลหนองม่วง บรรยากาศภายในวัดมีความสงบร่มรื่น'},
+{id:'LOC057',name:'วัดหนองเสม็ด',district:'อำเภอโคกสูง',category:'วัดและสถานที่ทางศาสนา',type:'Sub',lat:13.830000,lon:102.600000,highlights:'วัดสวยและศาสนสถานสำคัญ บรรยากาศภายในวัดสงบเงียบ ร่มรื่น และสะอาดเรียบง่าย'},
+{id:'LOC058',name:'วัดคลองเจริญ',district:'อำเภอโคกสูง',category:'วัดและสถานที่ทางศาสนา',type:'Sub',lat:13.751729,lon:102.640292,highlights:'วัดและศาสนสถานสำคัญ บรรยากาศภายในวัดมีความเงียบสงบ ร่มรื่น และเรียบง่าย'},
+{id:'LOC059',name:'วัดบ้านใหม่ไทยพัฒนา',district:'อำเภอโคกสูง',category:'วัดและสถานที่ทางศาสนา',type:'Sub',lat:13.870000,lon:102.620000,highlights:'วัดสวยและศาสนสถานสำคัญ ศูนย์รวมจิตใจและความศรัทธาของชาวบ้านในพื้นที่'},
+{id:'LOC060',name:'วัดอ่างศิลาเสนาราษฎร์อุทิศ',district:'อำเภอโคกสูง',category:'วัดและสถานที่ทางศาสนา',type:'Sub',lat:13.770476,lon:102.655273,highlights:'วัดเก่าแก่และศาสนสถานสำคัญ บรรยากาศภายในวัดมีความสงบร่มรื่น'},
+{id:'LOC061',name:'T-LEK หมูกระทะบุฟเฟ่ต์',district:'อำเภอโคกสูง',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.816652,lon:102.579756,highlights:'หมูกระทะบุฟเฟ่ต์อิ่มไม่อั้น ไลน์อาหารหลากหลาย หมูหมักนุ่ม เบคอน ไก่ ทะเลสดๆ'},
+{id:'LOC062',name:'ปราสาทเขาน้อยสีชมพู',district:'อรัญประเทศ',category:'แหล่งท่องเที่ยวธรรมชาติ',type:'Main',lat:13.583730,lon:102.528261,highlights:'ปราสาทขอมที่มีอายุเก่าแก่ที่สุดในประเทศไทย สร้างขึ้นราวศตวรรษที่ 12-13'},
+{id:'LOC063',name:'ส้มตำอีนนท์ปากหมา@ฟากห้วย',district:'อรัญประเทศ',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.673163,lon:102.487683,highlights:'ส้มตำและยำรสชาติดุดัน จัดจ้าน พริกมาเป็นสวน ปลาร้านัวตาสว่าง สายกินเผ็ดต้องลอง'},
+{id:'LOC064',name:'Goodday Cafe',district:'อรัญประเทศ',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.691918,lon:102.496853,highlights:'คาเฟ่มินิมอล บรรยากาศอบอุ่น ถ่ายรูปสวย เครื่องดื่มรสดีและเบเกอรีโฮมเมดสุดละมุน'},
+{id:'LOC065',name:'คำนิยม Cafe & Restaurant',district:'อรัญประเทศ',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.690074,lon:102.498278,highlights:'ร้านอาหารกึ่งคาเฟ่บรรยากาศดี เมนูหลากหลายทั้งไทยและฟิวชัน เหมาะกับครอบครัว'},
+{id:'LOC066',name:'ลงหม้อสุกี้@อรัญประเทศ',district:'อรัญประเทศ',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.686154,lon:102.514885,highlights:'บุฟเฟต์สุกี้ชาบูขวัญใจวัยรุ่น น้ำซุปกลมกล่อม ของสดใหม่ น้ำจิ้มรสเด็ด คุ้มค่าราคา'},
+{id:'LOC067',name:'ร้านอาหารเวียดนาม ยายต๊าม อรัญประเทศ',district:'อรัญประเทศ',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.688309,lon:102.508434,highlights:'ร้านอาหารเวียดนามระดับตำนาน แหนมเนืองแป้งนุ่ม ผักสดเติมไม่อั้น รสชาติต้นตำรับแท้ๆ'},
+{id:'LOC068',name:'หมู่บ้านท่องเที่ยววิถีชุมชนไทญ้อบ้านท่าข้าม',district:'อรัญประเทศ',category:'แหล่งท่องเที่ยวเชิงเกษตร',type:'Sub',lat:13.649231,lon:102.541624,highlights:'สัมผัสวัฒนธรรมพื้นบ้านชาวไทญ้อ ชมการแสดงบายศรีสู่ขวัญ ชิมอาหารท้องถิ่น'},
+{id:'LOC069',name:'สวนแคนตาลูปอรัญประเทศ',district:'อรัญประเทศ',category:'แหล่งท่องเที่ยวเชิงเกษตร',type:'Sub',lat:13.722400,lon:102.435700,highlights:'แหล่งปลูกแคนตาลูปเกรดพรีเมียม หวาน ฉ่ำ กรอบ อุดหนุนเกษตรกรโดยตรงจากสวน'},
+{id:'LOC070',name:'วัดชนะไชยศรี(วัดเกาะ)',district:'อรัญประเทศ',category:'วัดและสถานที่ทางศาสนา',type:'Sub',lat:13.680702,lon:102.503499,highlights:'วัดเก่าแก่คู่บ้านคู่เมือง โดดเด่นด้วยพระอุโบสถทรงโบราณ กราบไหว้หลวงพ่อโต'},
+{id:'LOC071',name:'วัดป่าอรัญญิกกาวาส',district:'อรัญประเทศ',category:'วัดและสถานที่ทางศาสนา',type:'Sub',lat:13.700000,lon:102.510000,highlights:'วัดป่าสายปฏิบัติ บรรยากาศร่มรื่น เงียบสงบ เหมาะสำหรับมาพักผ่อนจิตใจ'},
+{id:'LOC072',name:'ศาลพระสยามเทวาธิราชจำลอง อรัญประเทศ',district:'อรัญประเทศ',category:'วัดและสถานที่ทางศาสนา',type:'Sub',lat:13.690040,lon:102.502810,highlights:'สิ่งศักดิ์สิทธิ์คู่เมืองอรัญประเทศ ศูนย์รวมจิตใจที่ผู้คนนิยมมาสักการะขอพร'},
+{id:'LOC073',name:'ตลาดชายแดนบ้านคลองลึก (ตลาดโรงเกลือ)',district:'อรัญประเทศ',category:'จุดชมวิวและแลนด์มาร์ค',type:'Main',lat:13.663946,lon:102.548817,highlights:'ตลาดสินค้ามือสองและสินค้าราคาถูกที่ใหญ่ที่สุดในภูมิภาค สายตาต้องตาดีได้ตาร้ายเสีย'},
+{id:'LOC074',name:'ด่านพรมแดนบ้านคลองลึก',district:'อรัญประเทศ',category:'จุดชมวิวและแลนด์มาร์ค',type:'Main',lat:13.662845,lon:102.548807,highlights:'จุดผ่านแดนถาวรไทย-กัมพูชา ประตูสู่เสียมราฐ (นครวัด) จุดเช็กอินแลนด์มาร์กชายแดน'},
+{id:'LOC075',name:'อ่างเก็บน้ำพระปรง',district:'วัฒนานคร',category:'จุดชมวิวและแลนด์มาร์ค',type:'Main',lat:13.999372,lon:102.426126,highlights:'แหล่งท่องเที่ยวธรรมชาติขนาดใหญ่ วิวภูเขารายล้อม จุดชมพระอาทิตย์ตกที่สวยงาม'},
+{id:'LOC076',name:'อ่างเก็บน้ำคลองพระสะทึง',district:'วัฒนานคร',category:'สถานที่ออกกำลังกายและนันทนาการ',type:'Sub',lat:13.411012,lon:102.318115,highlights:'อ่างเก็บน้ำบรรยากาศดี สันเขื่อนกว้างขวาง ลมพัดเย็นสบาย พิกัดยอดฮิตสายปั่นจักรยาน'},
+{id:'LOC077',name:'สวนสาธารณะเฉลิมพระเกียรติฯ (สระน้ำบ้านบึง)',district:'วัฒนานคร',category:'สถานที่ออกกำลังกายและนันทนาการ',type:'Sub',lat:13.748529,lon:102.257134,highlights:'แลนด์มาร์กพักผ่อนใจกลางวัฒนานคร ลู่วิ่งรอบสระน้ำขนาดใหญ่ เครื่องเล่นออกกำลังกายครบ'},
+{id:'LOC078',name:'หมู่บ้านท่องเที่ยววิถีชุมชนไทญ้อ',district:'วัฒนานคร',category:'สินค้า OTOP',type:'Sub',lat:13.663946,lon:102.548817,highlights:'สัมผัสวัฒนธรรมดั้งเดิมของชาวไทญ้อ การแต่งกาย อาหารท้องถิ่น และผ้าทอมือลายไทญ้อ'},
+{id:'LOC079',name:'ร้าน เฝ๋อ หมูยอวัฒนา',district:'วัฒนานคร',category:'สินค้า OTOP',type:'Sub',lat:13.746051,lon:102.261895,highlights:'เมนูเฝ๋อหม้อไฟน้ำซุปกลมกล่อม ทานคู่กับหมูยอโฮมเมดเนื้อเด้งสูตรเด็ด ต้องซื้อกลับ'},
+{id:'LOC080',name:'ชูปัง เบเกอรี่',district:'วัฒนานคร',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.796373,lon:102.161021,highlights:'ร้านขนมปังและเค้กโฮมเมดอบสดใหม่ขนมหน้าตาน่ารัก รสชาติละมุน ไม่หวานเกินไป'},
+{id:'LOC081',name:'พระบรมราชานุสาวรีย์สมเด็จพระนเรศวรมหาราช',district:'วัฒนานคร',category:'จุดชมวิวและแลนด์มาร์ค',type:'Sub',lat:13.744111,lon:102.260444,highlights:'ศูนย์รวมจิตใจของชาวสระแก้ว ประดิษฐานอย่างสง่างามริมถนนใหญ่ จุดแวะสักการะ'},
+{id:'LOC082',name:'โกดัง 9 คาเฟ่ (Warehouse No.9)',district:'วัฒนานคร',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.658994,lon:102.311308,highlights:'คาเฟ่สไตล์ลอฟท์สุดเท่รีโนเวทจากโกดังเก่า ถ่ายรูปสวยดิบมีสไตล์ กาแฟเข้มข้น'},
+{id:'LOC083',name:'ธรรมชาติ คาเฟ่ (Thammachart Cafe)',district:'วัฒนานคร',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.754800,lon:102.257100,highlights:'คาเฟ่บรรยากาศอบอุ่น ร่มรื่นด้วยต้นไม้ตามชื่อร้าน เหมาะมานั่งชิลจิบเครื่องดื่ม'},
+{id:'LOC084',name:'ริมอ่างพระปรง คาเฟ่',district:'วัฒนานคร',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.911369,lon:102.327508,highlights:'คาเฟ่พิกัดเด็ดริมอ่างเก็บน้ำ วิวน้ำกว้างสุดสายตา นั่งจิบกาแฟพร้อมรับลมธรรมชาติ'},
+{id:'LOC085',name:'ศูนย์เรียนรู้เกษตรทฤษฎีใหม่บ้านทับประดู่',district:'วัฒนานคร',category:'แหล่งท่องเที่ยวเชิงเกษตร',type:'Sub',lat:13.684100,lon:102.215500,highlights:'แหล่งศึกษาดูงานเกษตรอินทรีย์และสมุนไพรพื้นบ้าน เรียนรู้การพึ่งพาตนเอง'},
+{id:'LOC086',name:'สวนส้มโอท่าเกวียน วัฒนานคร',district:'วัฒนานคร',category:'แหล่งท่องเที่ยวเชิงเกษตร',type:'Sub',lat:13.681400,lon:102.261200,highlights:'แหล่งปลูกส้มโอรสชาติหวานฉ่ำ เนื้อแน่น ซื้อผลผลิตสดๆ จากสวนได้โดยตรง'},
+{id:'LOC087',name:'วัดนครธรรม',district:'วัฒนานคร',category:'วัดและสถานที่ทางศาสนา',type:'Sub',lat:13.734856,lon:102.316600,highlights:'วัดสำคัญที่ประดิษฐานหลวงพ่อขาว พระพุทธรูปโบราณเนื้อดินคู่วัฒนานครที่มีความศักดิ์สิทธิ์'},
+{id:'LOC088',name:'วัดเจริญสุข (วัดบ้านไร่)',district:'วัฒนานคร',category:'วัดและสถานที่ทางศาสนา',type:'Sub',lat:13.719600,lon:102.285500,highlights:'วัดสงบเงียบร่มรื่น สถาปัตยกรรมสวยงาม เป็นที่พึ่งทางใจของชุมชนโดยรอบ'},
+{id:'LOC089',name:'วัดสายไหมวนาราม',district:'วัฒนานคร',category:'วัดและสถานที่ทางศาสนา',type:'Sub',lat:13.727116,lon:102.395902,highlights:'สถานที่ทำบุญและปฏิบัติธรรม บรรยากาศป่าโปร่งเงียบสงบ จิตใจร่มเย็น'},
+{id:'LOC090',name:'สันเขื่อนอ่างเก็บน้ำพระปรง',district:'วัฒนานคร',category:'จุดชมวิวและแลนด์มาร์ค',type:'Main',lat:13.999518,lon:102.425654,highlights:'จุดชมวิวถ่ายรูปมุมสูง มองเห็นผืนน้ำกว้างไกลตัดกับแนวทิวเขา สวยงามมาก'},
+{id:'LOC091',name:'สวนสาธารณเทศบาลตำบลวัฒนานคร',district:'วัฒนานคร',category:'สถานที่ออกกำลังกายและนันทนาการ',type:'Sub',lat:13.741337,lon:102.318110,highlights:'พื้นที่สีเขียวสำหรับทำกิจกรรมนันทนาการ เดินเล่น ออกกำลังกายของชุมชน'},
+{id:'LOC092',name:'กิจกรรมนั่งแพเปียก/เล่นน้ำอ่างพระปรง',district:'วัฒนานคร',category:'สถานที่ออกกำลังกายและนันทนาการ',type:'Sub',lat:13.904800,lon:102.261900,highlights:'กิจกรรมแอดเวนเจอร์คลายร้อนยอดฮิต ล่องแพชมวิวธรรมชาติ ลงเล่นน้ำสนุกสนาน'},
+{id:'LOC093',name:'แหล่งเรียนรู้การแปรูปไม้กฤษณา',district:'วัฒนานคร',category:'สินค้า OTOP',type:'Sub',lat:13.914200,lon:102.285800,highlights:'ชมวิถีการสกัดและแปรรูปไม้กฤษณาพรีเมียม เลือกซื้อผลิตภัณฑ์ไม้หอมแปรรูปคุณภาพสูง'},
+{id:'LOC094',name:'ถ้ำน้ำเขาศิวะ',district:'อำเภอคลองหาด',category:'แหล่งท่องเที่ยวธรรมชาติ',type:'Main',lat:13.321054,lon:102.328160,highlights:'ถ้ำน้ำสุด Unseen ต้องสวมเสื้อชูชีพเข้าชม ไฮไลท์คือหินงอกหินย้อยและน้ำในถ้ำใสเย็น'},
+{id:'LOC095',name:'ถ้ำเพชรโพธิ์ทอง',district:'อำเภอคลองหาด',category:'แหล่งท่องเที่ยวธรรมชาติ',type:'Main',lat:13.413797,lon:102.325818,highlights:'ถ้ำแห้งเดินชมง่าย โถงขนาดใหญ่ ผนังถ้ำมีลวดลายคล้ายใบโพธิ์สีทอง'},
+{id:'LOC096',name:'Malila Cafe (มะลิลา คาเฟ่)',district:'อำเภอคลองหาด',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.336654,lon:102.313794,highlights:'คาเฟ่สไตล์ลอฟท์ปูนเปลือยสุดเท่ ล้อมรอบด้วยต้นไม้ เครื่องดื่มเข้มข้น'},
+{id:'LOC097',name:'Blossom Era Farm',district:'อำเภอคลองหาด',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.411070,lon:102.318184,highlights:'ฟาร์มท่องเที่ยวและคาเฟ่สายธรรมชาติ มีแปลงดอกไม้และสวนเกษตรให้เดินถ่ายรูป'},
+{id:'LOC098',name:'The Mountain View Khlong Hat',district:'อำเภอคลองหาด',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.412000,lon:102.320000,highlights:'ร้านอาหารวิวภูเขาหินปูนแบบพาโนรามา สวยงามและโรแมนติก'},
+{id:'LOC099',name:'นาวาฟาร์ม สระแก้ว',district:'อำเภอเขาฉกรรจ์',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.654817,lon:102.080857,highlights:'ร้านอาหารและแหล่งท่องเที่ยวเชิงเกษตร บรรยากาศริมน้ำ มีกิจกรรมพายเรือ คาเฟ่สไตล์ธรรมชาติ'},
+{id:'LOC100',name:'ตลาดทองคำ',district:'อำเภอเขาฉกรรจ์',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.654381,lon:102.088012,highlights:'ตลาดชุมชน สตรีทฟู้ด ของกินท้องถิ่น เสื้อผ้า ของใช้ราคาถูก'},
+{id:'LOC101',name:'iVALii Hills-ไอวารี่ฮิลส์',district:'อำเภอเขาฉกรรจ์',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.654831,lon:102.088348,highlights:'คาเฟ่และที่พักสไตล์โมเดิร์นลอฟท์ วิวภูเขาและทุ่งหญ้า มีมุมถ่ายรูปเช็กอินยอดฮิต'},
+{id:'LOC102',name:'ภูภิรมย์ คาเฟ่',district:'อำเภอเขาฉกรรจ์',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.654757,lon:102.088316,highlights:'คาเฟ่รับลมวิวเขาฉกรรจ์แบบพาโนรามา บริการเครื่องดื่ม กาแฟ และเบเกอรี่'},
+{id:'LOC103',name:'สวนริมสระน้ำตลาดทองคำเขาฉกรรจ์',district:'อำเภอเขาฉกรรจ์',category:'สถานที่ออกกำลังกายและนันทนาการ',type:'Sub',lat:13.654507,lon:102.087743,highlights:'พื้นที่สาธารณะพักผ่อนริมสระน้ำ เหมาะเดินเล่น ออกกำลังกายช่วงเย็น'},
+{id:'LOC104',name:'คาเฟ่วู๊ดเฮ้าท์ เขาฉกรรจ์',district:'อำเภอเขาฉกรรจ์',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.659220,lon:102.096296,highlights:'คาเฟ่บ้านไม้กลางทุ่งทานตะวัน ไฮไลต์เด็ดคือจุดชมฝูงค้างคาวบินออกจากถ้ำตอนเย็น'},
+{id:'LOC105',name:'บ้านสวนทุเรียนบุฟเฟ่ เจ้อร',district:'อำเภอเขาฉกรรจ์',category:'แหล่งท่องเที่ยวเชิงเกษตร',type:'Sub',lat:13.710351,lon:102.071451,highlights:'สวนผลไม้ท่องเที่ยวเชิงเกษตร บุฟเฟ่ต์ทุเรียนและผลไม้ตามฤดูกาล สายกินทุเรียนต้องมา'},
+{id:'LOC106',name:'วัดถ้ำเขาฉกรรจ์',district:'อำเภอเขาฉกรรจ์',category:'วัดและสถานที่ทางศาสนา',type:'Main',lat:13.660545,lon:102.084091,highlights:'วัดบนภูเขาหินปูน มีบันไดขึ้นไปสักการะในถ้ำ มองเห็นวิวจากมุมสูง มีฝูงลิงป่า'},
+{id:'LOC107',name:'สวนรุกขชาติเขาฉกรรจ์',district:'อำเภอเขาฉกรรจ์',category:'แหล่งท่องเที่ยวธรรมชาติ',type:'Main',lat:13.662134,lon:102.094024,highlights:'พื้นที่อนุรักษ์ธรรมชาติ ร่มรื่นด้วยต้นไม้ใหญ่ จุดชมค้างคาวนับล้านตัวบินออกจากถ้ำตอนเย็น'},
+{id:'LOC108',name:'ธารน้ำไหลบ้านนา',district:'อำเภอเขาฉกรรจ์',category:'แหล่งท่องเที่ยวธรรมชาติ',type:'Main',lat:13.700888,lon:102.067679,highlights:'แหล่งท่องเที่ยวทางน้ำธรรมชาติ น้ำใสไหลเย็น เหมาะเล่นน้ำคลายร้อน มีซุ้มริมน้ำ'},
+{id:'LOC109',name:'Sonne country cafe',district:'อำเภอเขาฉกรรจ์',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.650000,lon:102.090000,highlights:'คาเฟ่สไตล์คันทรี ตกแต่งแนวโรงนาฝรั่ง บรรยากาศเงียบสงบ ล้อมรอบด้วยธรรมชาติ'},
+{id:'LOC110',name:'บ้านหนองโกวิทย์',district:'อำเภอเขาฉกรรจ์',category:'สินค้า OTOP',type:'Sub',lat:13.666704,lon:102.132331,highlights:'ชุมชนท่องเที่ยววิถีชาวบ้าน เรียนรู้วิถีชีวิตชุมชน บรรยากาศทุ่งนาป่าเขา'},
+{id:'LOC111',name:'อ่างเก็บน้ำเขาสามสิบ',district:'อำเภอเขาฉกรรจ์',category:'แหล่งท่องเที่ยวธรรมชาติ',type:'Main',lat:13.673476,lon:102.166936,highlights:'อ่างเก็บน้ำขนาดใหญ่ วิวภูเขาสามสิบ จุดกางเต็นท์ยอดนิยมสายแคมป์ปิ้ง ชมพระอาทิตย์ตก'},
+{id:'LOC112',name:'สวนน้ำลุงออง',district:'อำเภอเขาฉกรรจ์',category:'สถานที่ออกกำลังกายและนันทนาการ',type:'Sub',lat:13.609691,lon:102.048327,highlights:'สวนน้ำชุมชน สระว่ายน้ำเครื่องเล่นสำหรับเด็กและครอบครัว กิจกรรมยอดฮิตช่วงวันหยุด'},
+{id:'LOC113',name:'A Cake of Love',district:'อำเภอเขาฉกรรจ์',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.647940,lon:102.092201,highlights:'ร้านเค้กเขาฉกรรจ์ คาเฟ่เบเกอรี่ เค้กโฮมเมดและกาแฟน่ารักๆ'},
+{id:'LOC114',name:'น้ำตกเขาตะกรุบ',district:'อำเภอวังน้ำเย็น',category:'แหล่งท่องเที่ยวธรรมชาติ',type:'Main',lat:13.469934,lon:101.967026,highlights:'น้ำตกขนาดใหญ่หลายชั้นในเขตรักษาพันธุ์สัตว์ป่าเขาอ่างฤาไน เส้นทางเดินศึกษาธรรมชาติ'},
+{id:'LOC115',name:'CAVALLO COFFEE',district:'อำเภอวังน้ำเย็น',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.508609,lon:102.193333,highlights:'คาเฟ่สไตล์ลอฟท์โมเดิร์นเท่ๆ กาแฟสเปเชียลตี้รสชาติดี มุมถ่ายรูปสตรีทยอดนิยม'},
+{id:'LOC116',name:'เขาตะกรุบพัฒนา',district:'อำเภอวังน้ำเย็น',category:'แหล่งท่องเที่ยวธรรมชาติ',type:'Sub',lat:13.482612,lon:101.990242,highlights:'ชุมชนเกษตรกรรมทางผ่านไปน้ำตก บรรยากาศโอบล้อมด้วยภูเขา เหมาะขับรถชมวิว'},
+{id:'LOC117',name:'ทำเป็นเท่ คาเฟ่',district:'อำเภอวังน้ำเย็น',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.509728,lon:102.118823,highlights:'ร้านกาแฟบรรยากาศเป็นกันเอง ตกแต่งมีสไตล์ เบเกอรีโฮมเมดคอยต้อนรับ'},
+{id:'LOC118',name:'วังน้ำเย็น คาเฟ่',district:'อำเภอวังน้ำเย็น',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.558558,lon:102.148979,highlights:'คาเฟ่ชื่อประจำอำเภอ บรรยากาศสไตล์สวน เน้นบริการเครื่องดื่มเย็น ชา กาแฟ'},
+{id:'LOC119',name:'หลงรัก คาเฟ่',district:'อำเภอวังน้ำเย็น',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.506411,lon:102.157285,highlights:'คาเฟ่บรรยากาศอบอุ่น ตกแต่งสวยงามโทนละมุน เมนูเด่นคือเบเกอรี่ เค้กโฮมเมด'},
+{id:'LOC120',name:'313 Smoothie house',district:'อำเภอวังน้ำเย็น',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.534197,lon:102.163061,highlights:'ร้านเครื่องดื่มสายสุขภาพและสมูทตี้ผลไม้ปั่นเนื้อเนียนเข้มข้น รสชาติถูกปากทุกวัย'},
+{id:'LOC121',name:'hanabi สระแก้ว',district:'อำเภอวังน้ำเย็น',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.517553,lon:102.174373,highlights:'ร้านอาหารสไตล์ญี่ปุ่น ตกแต่งฟีลเจแปนนิส มีมุมถ่ายรูปน่ารัก เมนูอาหารแนวเอเชีย'},
+{id:'LOC122',name:'มหาเฮง โฮมคาเฟ่',district:'อำเภอวังน้ำเย็น',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.479166,lon:102.195587,highlights:'คาเฟ่ฟีลบ้านสวน ให้ความรู้สึกอบอุ่นเหมือนนั่งกินกาแฟที่บ้าน ร่มรื่นด้วยต้นไม้'},
+{id:'LOC123',name:'สหกรณ์วังน้ำเย็น',district:'อำเภอวังน้ำเย็น',category:'สินค้า OTOP',type:'Sub',lat:13.435719,lon:102.200875,highlights:'แหล่งผลิตและจำหน่ายผลิตภัณฑ์นมคุณภาพสูง จุดแวะซื้อของฝาก นมสด นมกล่อง'},
+{id:'LOC124',name:'สวนอินทผลัมวังน้ำเย็น',district:'อำเภอวังน้ำเย็น',category:'แหล่งท่องเที่ยวเชิงเกษตร',type:'Sub',lat:13.479061,lon:102.182895,highlights:'แหล่งท่องเที่ยวเชิงเกษตร สวนอินทผลัมทานผลสด เปิดให้เข้าชมซื้อผลผลิตสดๆ ในฤดูกาล'},
+{id:'LOC125',name:'คาเฟเดอะล็อค24',district:'อำเภอวังสมบูรณ์',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.322807,lon:102.111744,highlights:'คาเฟ่สไตล์ลอฟท์โมเดิร์น ผสมผสานอิฐแดงเท่ๆ บรรยากาศร่มรื่น เป็นจุดนัดพบยอดนิยม'},
+{id:'LOC126',name:'at pine cafe',district:'อำเภอวังสมบูรณ์',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.395692,lon:102.207209,highlights:'คาเฟ่บรรยากาศดีรายล้อมด้วยธีมต้นสน ให้ความรู้สึกอบอุ่น สดชื่น สไตล์ธรรมชาติ'},
+{id:'LOC127',name:'น้ำตกธารสมบูรณ์',district:'อำเภอวังสมบูรณ์',category:'แหล่งท่องเที่ยวธรรมชาติ',type:'Sub',lat:13.420157,lon:102.075674,highlights:'น้ำตกธรรมชาติขนาดเล็ก บรรยากาศร่มรื่น แหล่งพักผ่อนหย่อนใจและเล่นน้ำคลายร้อน'},
+{id:'LOC128',name:'วัดเขาลาน',district:'อำเภอวังสมบูรณ์',category:'วัดและสถานที่ทางศาสนา',type:'Sub',lat:13.379045,lon:102.147272,highlights:'วัดสวยบนเนินเขา บรรยากาศเงียบสงบ ร่มเย็น สามารถชมวิวทิวทัศน์รอบๆ จากมุมสูง'},
+{id:'LOC129',name:'บ้านสวนอนุสรณ์',district:'อำเภอวังสมบูรณ์',category:'ร้านอาหารและคาเฟ่',type:'Sub',lat:13.325967,lon:102.244845,highlights:'ที่พักแนวบ้านสวน บรรยากาศอบอุ่นเป็นกันเอง ล้อมรอบด้วยไร่สวนและธรรมชาติ'},
+{id:'LOC130',name:'อ่างเก็บน้ำคลองพระสะทึง (วังสมบูรณ์)',district:'อำเภอวังสมบูรณ์',category:'แหล่งท่องเที่ยวธรรมชาติ',type:'Sub',lat:13.411012,lon:102.318115,highlights:'อ่างเก็บน้ำขนาดใหญ่ บรรยากาศดีวิวภูเขาโอบล้อม จุดกางเต็นท์ชมพระอาทิตย์ตก'}
+];
+
+var MISSIONS=[
+{missionId:'M001',placeName:'อุทยานแห่งชาติปางสีดา',taskName:'ถ่ายรูปคู่น้ำตกปางสีดา',rewardCoins:50},
+{missionId:'M002',placeName:'น้ำตกปางสีดา',taskName:'ถ่ายรูปน้ำตกให้สวยที่สุด',rewardCoins:50},
+{missionId:'M003',placeName:'จุดชมวิวหุบเขาห้วยโสมง',taskName:'ถ่ายรูปวิวหุบเขาอันงดงาม',rewardCoins:50},
+{missionId:'M004',placeName:'วัดเขาสิงโต',taskName:'ถ่ายรูปวิวจากรอยพระพุทธบาทบนยอดเขา',rewardCoins:50},
+{missionId:'M005',placeName:'วัดสระแก้ว พระอารามหลวง',taskName:'ถ่ายรูปสถาปัตยกรรมพระอุโบสถ',rewardCoins:50},
+{missionId:'M006',placeName:'วัดศาลาลำดวน',taskName:'ถ่ายรูปสถาปัตยกรรมพระอุโบสถ',rewardCoins:50},
+{missionId:'M007',placeName:'วัดราษฎร์นิรมิตร(บ้านแก้ง)',taskName:'ถ่ายรูปสถาปัตยกรรมพระอุโบสถ',rewardCoins:50},
+{missionId:'M008',placeName:'วัดโคกเจริญสุข (วัดโคกอีหลง)',taskName:'ถ่ายรูปมุมสะท้อนวิถีชุมชนภายในวัด',rewardCoins:50},
+{missionId:'M009',placeName:'วัดหนองกะพ้อ',taskName:'ถ่ายรูปสถาปัตยกรรมและสิ่งศักดิ์สิทธิ์',rewardCoins:50},
+{missionId:'M010',placeName:'วัดท่าเกษม',taskName:'ถ่ายภาพมุมสงบหรือพระประธานในวัด',rewardCoins:50},
+{missionId:'M011',placeName:'หลวงพ่อพระโลกธาตุหยกขาว',taskName:'ถ่ายภาพพระพุทธรูปหยกขาวอันงดงาม',rewardCoins:50},
+{missionId:'M012',placeName:'อุทยานหลวงปู่สด พญานาค 4 ตระกูล',taskName:'ถ่ายรูปความอลังการของรูปปั้นพญานาค',rewardCoins:50},
+{missionId:'M013',placeName:'สกายวอร์ควัดเขาสิงโต',taskName:'ถ่ายรูปมุมสูงบนสกายวอร์ค',rewardCoins:50},
+{missionId:'M014',placeName:'ศาลหลักเมืองสระแก้ว',taskName:'ถ่ายรูปความร่มรื่นใต้ต้นไม้ใหญ่',rewardCoins:50},
+{missionId:'M015',placeName:'สวนสาธารณะสระแก้วสระขวัญ',taskName:'ถ่ายรูปความร่มรื่นใต้ต้นไม้ใหญ่',rewardCoins:50},
+{missionId:'M016',placeName:'ตลาดเมืองแก้ว',taskName:'ถ่ายรูปสตรีทฟู้ดหรือของกินพื้นบ้าน',rewardCoins:50},
+{missionId:'M017',placeName:'สนามกีฬากลางจังหวัดสระแก้ว',taskName:'ถ่ายรูปขณะออกกำลังกาย',rewardCoins:50},
+{missionId:'M018',placeName:'สนามกีฬาเทศบาลเมืองสระแก้ว',taskName:'ถ่ายรูปขณะออกกำลังกาย',rewardCoins:50},
+{missionId:'M019',placeName:'สนามกอล์ฟบูรพา',taskName:'ถ่ายรูปขณะตีกอล์ฟ',rewardCoins:50},
+{missionId:'M020',placeName:'นมคูล Nom-Cool Fresh Milk 100%',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M021',placeName:'ร้านอาหารจันทร์มณี By ลอยนวล',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M022',placeName:'Fieldter Cafe',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M023',placeName:'Cruise Away Sa Kaeo',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M024',placeName:'holly home cafe',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M025',placeName:'หมูจุ่ม + ยำ หลังโรงพยาบาลสระแก้ว',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M026',placeName:'R-Moxy BAR',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M027',placeName:'Coffee Hills Cafe',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M028',placeName:'หอประชุมที่ว่าการอำเภอเมืองสระแก้ว',taskName:'ถ่ายรูปสินค้า OTOP ที่คุณซื้อมา',rewardCoins:50},
+{missionId:'M029',placeName:'บ้านคลองอาราง',taskName:'ถ่ายภาพขณะทำกิจกรรมชุมชน',rewardCoins:50},
+{missionId:'M030',placeName:'คอกม้าบึงลำดวน สอนขี่ม้า',taskName:'ถ่ายภาพตอนที่คุณอยู่คู่กับม้า',rewardCoins:50},
+{missionId:'M031',placeName:'โครงการโรงเรียนกาสรกสิวิทย์',taskName:'ถ่ายภาพขณะทำกิจกรรม',rewardCoins:50},
+{missionId:'M032',placeName:'อุทยานแห่งชาติตาพระยา',taskName:'ถ่ายรูปคู่กับความงามในธรรมชาติ',rewardCoins:50},
+{missionId:'M033',placeName:'ละลุ',taskName:'ถ่ายรูปคู่กับเสาดินลวดลายแปลกตา',rewardCoins:50},
+{missionId:'M034',placeName:'ปราสาทเขาโล้น',taskName:'ถ่ายรูปคู่กับความงามในธรรมชาติ',rewardCoins:50},
+{missionId:'M035',placeName:'ตลาดนัดชุมชน โคกอีโด่ย',taskName:'ถ่ายรูปคู่กับสินค้าที่ซื้อมา',rewardCoins:50},
+{missionId:'M036',placeName:'วัดตาพระยา',taskName:'ถ่ายรูปสถาปัตยกรรมพระอุโบสถ',rewardCoins:50},
+{missionId:'M037',placeName:'วัดพุทธรัตนาราม',taskName:'ถ่ายรูปสถาปัตยกรรมพระอุโบสถ',rewardCoins:50},
+{missionId:'M038',placeName:'วัดพรหมสุวรรณ ตาพระยา',taskName:'ถ่ายรูปสถาปัตยกรรมพระอุโบสถ',rewardCoins:50},
+{missionId:'M039',placeName:'Mee-Shi Cafe & Restaurant',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M040',placeName:'42 อู้ฟู่คาเฟ่',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M041',placeName:'เฮือนตาพระยา',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M042',placeName:'Lanta cat cafe',taskName:'ถ่ายรูปกับน้องแมวในร้าน',rewardCoins:50},
+{missionId:'M043',placeName:'posh coffee',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M044',placeName:'อุทยานประวัติศาสตร์สด๊กก๊อกธม',taskName:'ถ่ายรูปคู่กับปราสาทหินอันยิ่งใหญ่',rewardCoins:50},
+{missionId:'M045',placeName:'บ้านเค้กตังเม',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M046',placeName:'Escape house',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M047',placeName:'Baan Cafe',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M048',placeName:'Dok-Bua Cafe',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M049',placeName:'Wat Cafe 1324',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M050',placeName:'มีโชค Coffee&Cafe',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M051',placeName:'กะเพราคาเฟ่',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M052',placeName:'ซูดานคาเฟ่',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M053',placeName:'ร้านแสนเวียงไหมไทย',taskName:'ถ่ายรูปผ้าที่คิดว่าสวยงาม',rewardCoins:50},
+{missionId:'M054',placeName:'พันไหมเค้ก (Panmai cake)',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M055',placeName:'วัดโคกสูง',taskName:'ถ่ายรูปสถาปัตยกรรมพระอุโบสถ',rewardCoins:50},
+{missionId:'M056',placeName:'วัดหนองม่วง',taskName:'ถ่ายรูปสถาปัตยกรรมพระอุโบสถ',rewardCoins:50},
+{missionId:'M057',placeName:'วัดหนองเสม็ด',taskName:'ถ่ายรูปสถาปัตยกรรมพระอุโบสถ',rewardCoins:50},
+{missionId:'M058',placeName:'วัดคลองเจริญ',taskName:'ถ่ายรูปสถาปัตยกรรมพระอุโบสถ',rewardCoins:50},
+{missionId:'M059',placeName:'วัดบ้านใหม่ไทยพัฒนา',taskName:'ถ่ายรูปสถาปัตยกรรมพระอุโบสถ',rewardCoins:50},
+{missionId:'M060',placeName:'วัดอ่างศิลาเสนาราษฎร์อุทิศ',taskName:'ถ่ายรูปสถาปัตยกรรมพระอุโบสถ',rewardCoins:50},
+{missionId:'M061',placeName:'T-LEK หมูกระทะบุฟเฟ่ต์',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M062',placeName:'ปราสาทเขาน้อยสีชมพู',taskName:'ถ่ายรูปคู่กับปราสาทหินโบราณ',rewardCoins:50},
+{missionId:'M063',placeName:'ส้มตำอีนนท์ปากหมา@ฟากห้วย',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M064',placeName:'Goodday Cafe',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M065',placeName:'คำนิยม Cafe & Restaurant',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M066',placeName:'ลงหม้อสุกี้@อรัญประเทศ',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M067',placeName:'ร้านอาหารเวียดนาม ยายต๊าม อรัญประเทศ',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M068',placeName:'หมู่บ้านท่องเที่ยววิถีชุมชนไทญ้อบ้านท่าข้าม',taskName:'ถ่ายรูปกิจกรรมพื้นเมืองที่คุณทำ',rewardCoins:50},
+{missionId:'M069',placeName:'สวนแคนตาลูปอรัญประเทศ',taskName:'ถ่ายรูปกับแคนตาลูปสดๆ',rewardCoins:50},
+{missionId:'M070',placeName:'วัดชนะไชยศรี(วัดเกาะ)',taskName:'ถ่ายรูปสถาปัตยกรรมพระอุโบสถ',rewardCoins:50},
+{missionId:'M071',placeName:'วัดป่าอรัญญิกกาวาส',taskName:'ถ่ายรูปสถาปัตยกรรมพระอุโบสถ',rewardCoins:50},
+{missionId:'M072',placeName:'ศาลพระสยามเทวาธิราชจำลอง อรัญประเทศ',taskName:'ถ่ายรูปสิ่งศักดิ์สิทธิ์คู่เมือง',rewardCoins:50},
+{missionId:'M073',placeName:'ตลาดชายแดนบ้านคลองลึก (ตลาดโรงเกลือ)',taskName:'ถ่ายรูปสินค้าที่คุณหิ้วมา',rewardCoins:50},
+{missionId:'M074',placeName:'ด่านพรมแดนบ้านคลองลึก',taskName:'ถ่ายรูปคู่ตรงประตูด่านชายแดน',rewardCoins:50},
+{missionId:'M075',placeName:'อ่างเก็บน้ำพระปรง',taskName:'ถ่ายรูปอ่างเก็บน้ำให้สวยที่สุด',rewardCoins:50},
+{missionId:'M076',placeName:'อ่างเก็บน้ำคลองพระสะทึง',taskName:'ถ่ายรูปอ่างเก็บน้ำให้สวยที่สุด',rewardCoins:50},
+{missionId:'M077',placeName:'สวนสาธารณะเฉลิมพระเกียรติฯ (สระน้ำบ้านบึง)',taskName:'ถ่ายรูปความร่มรื่นใต้ต้นไม้ใหญ่',rewardCoins:50},
+{missionId:'M078',placeName:'หมู่บ้านท่องเที่ยววิถีชุมชนไทญ้อ',taskName:'ถ่ายรูปผลิตภัณฑ์ชุมชนที่คุณชอบ',rewardCoins:50},
+{missionId:'M079',placeName:'ร้าน เฝ๋อ หมูยอวัฒนา',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M080',placeName:'ชูปัง เบเกอรี่',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M081',placeName:'พระบรมราชานุสาวรีย์สมเด็จพระนเรศวรมหาราช',taskName:'ถ่ายรูปสิ่งที่ประทับใจ',rewardCoins:50},
+{missionId:'M082',placeName:'โกดัง 9 คาเฟ่ (Warehouse No.9)',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M083',placeName:'ธรรมชาติ คาเฟ่ (Thammachart Cafe)',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M084',placeName:'ริมอ่างพระปรง คาเฟ่',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M085',placeName:'ศูนย์เรียนรู้เกษตรทฤษฎีใหม่บ้านทับประดู่',taskName:'ถ่ายรูปกิจกรรมที่คุณประทับใจ',rewardCoins:50},
+{missionId:'M086',placeName:'สวนส้มโอท่าเกวียน วัฒนานคร',taskName:'ถ่ายรูปกับสวนส้มโอ',rewardCoins:50},
+{missionId:'M087',placeName:'วัดนครธรรม',taskName:'ถ่ายรูปสถาปัตยกรรมพระอุโบสถ',rewardCoins:50},
+{missionId:'M088',placeName:'วัดเจริญสุข (วัดบ้านไร่)',taskName:'ถ่ายรูปสถาปัตยกรรมพระอุโบสถ',rewardCoins:50},
+{missionId:'M089',placeName:'วัดสายไหมวนาราม',taskName:'ถ่ายรูปสถาปัตยกรรมพระอุโบสถ',rewardCoins:50},
+{missionId:'M090',placeName:'สันเขื่อนอ่างเก็บน้ำพระปรง',taskName:'ถ่ายรูปอ่างเก็บน้ำให้สวยที่สุด',rewardCoins:50},
+{missionId:'M091',placeName:'สวนสาธารณเทศบาลตำบลวัฒนานคร',taskName:'ถ่ายรูปบรรยากาศที่ร่มรื่น',rewardCoins:50},
+{missionId:'M092',placeName:'กิจกรรมนั่งแพเปียก/เล่นน้ำอ่างพระปรง',taskName:'ถ่ายรูปขณะทำกิจกรรม',rewardCoins:50},
+{missionId:'M093',placeName:'แหล่งเรียนรู้การแปรูปไม้กฤษณา',taskName:'ถ่ายรูปขณะเรียนรู้',rewardCoins:50},
+{missionId:'M094',placeName:'ถ้ำน้ำเขาศิวะ',taskName:'ถ่ายรูปธรรมชาติที่น่าตื่นตะลึง',rewardCoins:50},
+{missionId:'M095',placeName:'ถ้ำเพชรโพธิ์ทอง',taskName:'ถ่ายรูปธรรมชาติภายในถ้ำ',rewardCoins:50},
+{missionId:'M096',placeName:'Malila Cafe (มะลิลา คาเฟ่)',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M097',placeName:'Blossom Era Farm',taskName:'ถ่ายรูปกับแปลงดอกไม้',rewardCoins:50},
+{missionId:'M098',placeName:'The Mountain View Khlong Hat',taskName:'ถ่ายรูปวิวภูเขาพาโนรามา',rewardCoins:50},
+{missionId:'M099',placeName:'นาวาฟาร์ม สระแก้ว',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M100',placeName:'ตลาดทองคำ',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M101',placeName:'iVALii Hills-ไอวารี่ฮิลส์',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M102',placeName:'ภูภิรมย์ คาเฟ่',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M103',placeName:'สวนริมสระน้ำตลาดทองคำเขาฉกรรจ์',taskName:'ถ่ายรูปบรรยากาศริมสระ',rewardCoins:50},
+{missionId:'M104',placeName:'คาเฟ่วู๊ดเฮ้าท์ เขาฉกรรจ์',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M105',placeName:'บ้านสวนทุเรียนบุฟเฟ่ เจ้อร',taskName:'ถ่ายรูปกับทุเรียนสดๆ',rewardCoins:50},
+{missionId:'M106',placeName:'วัดถ้ำเขาฉกรรจ์',taskName:'ถ่ายรูปสถาปัตยกรรมพระอุโบสถ',rewardCoins:50},
+{missionId:'M107',placeName:'สวนรุกขชาติเขาฉกรรจ์',taskName:'ถ่ายรูปสิ่งที่คุณประทับใจ',rewardCoins:50},
+{missionId:'M108',placeName:'ธารน้ำไหลบ้านนา',taskName:'ถ่ายรูปธารน้ำไหลให้สวยที่สุด',rewardCoins:50},
+{missionId:'M109',placeName:'Sonne country cafe',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M110',placeName:'บ้านหนองโกวิทย์',taskName:'ถ่ายรูปสิ่งที่คุณประทับใจ',rewardCoins:50},
+{missionId:'M111',placeName:'อ่างเก็บน้ำเขาสามสิบ',taskName:'ถ่ายรูปอ่างเก็บน้ำให้สวยที่สุด',rewardCoins:50},
+{missionId:'M112',placeName:'สวนน้ำลุงออง',taskName:'ถ่ายรูปขณะทำกิจกรรม',rewardCoins:50},
+{missionId:'M113',placeName:'A Cake of Love',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M114',placeName:'น้ำตกเขาตะกรุบ',taskName:'ถ่ายรูปคู่กับน้ำตกให้สวยที่สุด',rewardCoins:50},
+{missionId:'M115',placeName:'CAVALLO COFFEE',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M116',placeName:'เขาตะกรุบพัฒนา',taskName:'ถ่ายรูปสิ่งที่คุณประทับใจ',rewardCoins:50},
+{missionId:'M117',placeName:'ทำเป็นเท่ คาเฟ่',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M118',placeName:'วังน้ำเย็น คาเฟ่',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M119',placeName:'หลงรัก คาเฟ่',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M120',placeName:'313 Smoothie house',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M121',placeName:'hanabi สระแก้ว',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M122',placeName:'มหาเฮง โฮมคาเฟ่',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M123',placeName:'สหกรณ์วังน้ำเย็น',taskName:'ถ่ายรูปผลิตภัณฑ์นมที่คุณชอบ',rewardCoins:50},
+{missionId:'M124',placeName:'สวนอินทผลัมวังน้ำเย็น',taskName:'ถ่ายรูปกับต้นอินทผลัม',rewardCoins:50},
+{missionId:'M125',placeName:'คาเฟเดอะล็อค24',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M126',placeName:'at pine cafe',taskName:'ถ่ายรูปเมนูที่คุณถูกใจ',rewardCoins:50},
+{missionId:'M127',placeName:'น้ำตกธารสมบูรณ์',taskName:'ถ่ายรูปคู่กับน้ำตกให้สวยที่สุด',rewardCoins:50},
+{missionId:'M128',placeName:'วัดเขาลาน',taskName:'ถ่ายรูปสถาปัตยกรรมพระอุโบสถ',rewardCoins:50},
+{missionId:'M129',placeName:'บ้านสวนอนุสรณ์',taskName:'ถ่ายรูปสิ่งที่คุณประทับใจ',rewardCoins:50},
+{missionId:'M130',placeName:'อ่างเก็บน้ำคลองพระสะทึง (วังสมบูรณ์)',taskName:'ถ่ายรูปอ่างเก็บน้ำให้สวยที่สุด',rewardCoins:50}
+];
+
+var SHOP=[
+{id:'hat_sun',slot:'hat',name:'หมวกกันแดด',emoji:'👒',price:50,desc:'เที่ยวแดดออก'},
+{id:'hat_cap',slot:'hat',name:'หมวกแก็ป',emoji:'🧢',price:60,desc:'สไตล์สตรีท'},
+{id:'hat_cowboy',slot:'hat',name:'หมวกคาวบอย',emoji:'🤠',price:100,desc:'นักผจญภัย'},
+{id:'hat_party',slot:'hat',name:'หมวกปาร์ตี้',emoji:'🎉',price:80,desc:'มาเที่ยวกัน!'},
+{id:'hat_tophat',slot:'hat',name:'หมวกสุภาพ',emoji:'🎩',price:150,desc:'ดูดีมีสไตล์'},
+{id:'hat_crown',slot:'hat',name:'มงกุฎทอง',emoji:'👑',price:250,desc:'ราชาแห่งทริป'},
+{id:'gls_round',slot:'glasses',name:'แว่นกลม',emoji:'👓',price:70,desc:'น่ารักวินเทจ'},
+{id:'gls_cool',slot:'glasses',name:'แว่นกันแดด',emoji:'🕶️',price:90,desc:'เท่มาก'},
+{id:'gls_heart',slot:'glasses',name:'แว่นรูปหัวใจ',emoji:'🩷',price:120,desc:'น่ารักสุดๆ'},
+{id:'acc_backpack',slot:'bag',name:'เป้สะพาย',emoji:'🎒',price:80,desc:'พร้อมเที่ยว'},
+{id:'acc_camera',slot:'bag',name:'กล้องถ่ายรูป',emoji:'📷',price:100,desc:'สายถ่ายรูป'},
+{id:'acc_flower',slot:'bag',name:'ช่อดอกไม้',emoji:'💐',price:70,desc:'สวยงาม'},
+{id:'acc_compass',slot:'bag',name:'เข็มทิศ',emoji:'🧭',price:110,desc:'นักสำรวจ'},
+{id:'acc_map',slot:'bag',name:'แผนที่',emoji:'🗺️',price:90,desc:'รักการเดินทาง'}
+];
+
+var TRIP_PACKAGES=[
+{id:'PKG001',name:'🌿 ธรรมชาติปางสีดา',time:'1 วัน',desc:'น้ำตก · ผีเสื้อ · จุดชมวิว',color:'#15803d',placeIds:['LOC001','LOC002','LOC003','LOC013']},
+{id:'PKG002',name:'🙏 สายมูสระแก้ว',time:'ครึ่งวัน',desc:'พญานาค · วัดเขาสิงโต · ศาลหลักเมือง',color:'#b45309',placeIds:['LOC012','LOC004','LOC013','LOC014','LOC011']},
+{id:'PKG003',name:'☕ คาเฟ่ฮิตในเมือง',time:'ครึ่งวัน',desc:'Fieldter · Cruise Away · holly home',color:'#c2410c',placeIds:['LOC022','LOC023','LOC024','LOC027','LOC020']},
+{id:'PKG004',name:'🏛️ ชายแดนอรัญประเทศ',time:'1 วัน',desc:'โรงเกลือ · ด่านพรมแดน · ปราสาทสีชมพู',color:'#6d28d9',placeIds:['LOC062','LOC073','LOC074','LOC064','LOC067']},
+{id:'PKG005',name:'🏔️ ผจญภัยตาพระยา',time:'1 วัน',desc:'ละลุ · ปราสาทเขาโล้น · อุทยานฯ',color:'#0369a1',placeIds:['LOC032','LOC033','LOC034']},
+{id:'PKG006',name:'🦇 เขาฉกรรจ์ครบรส',time:'ครึ่งวัน',desc:'วัดถ้ำ · สวนรุกขชาติ · ธารน้ำไหล',color:'#7c3aed',placeIds:['LOC106','LOC107','LOC108','LOC104']},
+{id:'PKG007',name:'💦 วัฒนานครอ่างพระปรง',time:'1 วัน',desc:'อ่างเก็บน้ำ · สันเขื่อน · ล่องแพ',color:'#0891b2',placeIds:['LOC075','LOC090','LOC092','LOC084']},
+{id:'PKG008',name:'🕌 ปราสาทโคกสูง',time:'1 วัน',desc:'สด๊กก๊อกธม · คาเฟ่ · ผ้าไหม',color:'#be185d',placeIds:['LOC044','LOC045','LOC053','LOC047']}
+];
+
+var SHOPS_LOCAL=[
+{id:'S001',name:'ร้านป้าติ๋มของฝาก',cat:'ของฝาก',desc:'ขนมพื้นบ้านและของฝากสระแก้วแท้ๆ',discount:'ส่วนลด 20 บาท',coins:50,bg:'#fdf2f8',cl:'#be185d',e:'🛍️'},
+{id:'S002',name:'สหกรณ์วังน้ำเย็น',cat:'นมสด',desc:'นมสดและผลิตภัณฑ์แปรรูปคุณภาพสูง',discount:'ส่วนลด 15 บาท',coins:40,bg:'#eff6ff',cl:'#1d4ed8',e:'🥛'},
+{id:'S003',name:'คาเฟ่ริมอ่างพระปรง',cat:'คาเฟ่',desc:'เครื่องดื่มสดชื่นริมน้ำวิวสวย',discount:'เครื่องดื่ม 1 แก้วฟรี',coins:100,bg:'#fff7ed',cl:'#c2410c',e:'☕'},
+{id:'S004',name:'ร้านผ้าไหมแสนเวียง',cat:'OTOP',desc:'ผ้าไหมทอมือคุณภาพจากโคกสูง',discount:'ส่วนลด 50 บาท',coins:120,bg:'#f5f3ff',cl:'#7c3aed',e:'🧵'},
+{id:'S005',name:'สวนส้มโอท่าเกวียน',cat:'เกษตร',desc:'ส้มโอสดหวานฉ่ำเก็บจากสวนจริง',discount:'ส้มโอ 1 ผลใหญ่',coins:60,bg:'#f7fee7',cl:'#4d7c0f',e:'🍊'},
+{id:'S006',name:'นมคูล สระแก้ว',cat:'เครื่องดื่ม',desc:'นมสดแท้ 100% รสชาติเข้มข้น',discount:'นมสด 1 ขวด',coins:45,bg:'#eff6ff',cl:'#0369a1',e:'🍼'},
+{id:'S007',name:'ร้านชุมชนปางสีดา',cat:'อาหาร',desc:'อาหารพื้นบ้านแสนอร่อยใกล้อุทยาน',discount:'ส่วนลด 30 บาท',coins:80,bg:'#fef9ee',cl:'#b45309',e:'🍱'},
+{id:'S008',name:'หมูยอวัฒนา',cat:'OTOP',desc:'หมูยอโฮมเมดสูตรต้นตำรับดั้งเดิม',discount:'หมูยอ 100 กรัม',coins:70,bg:'#fff1f2',cl:'#be123c',e:'🥩'}
+];
+
+// ── STATE ──
+var user=null,userLogs=[],filteredPlaces=[],renderedMissions=[];
+var planPlaces=[],doneSet=new Set(),curCat='all',curDist='all';
+var curPlace=null,curMission=null,curNearby=[],photoB64=null;
+var equipped={hat:'none',glasses:'none',bag:'none'};
+var ownedItems=[],curShopSlot='hat';
+
+// ── LOCALSTORAGE ──
+var LS_USERS='moshi_users',LS_SESSION='moshi_session',LS_LOGS='moshi_logs_';
+function getUsers(){try{return JSON.parse(localStorage.getItem(LS_USERS)||'[]')}catch(e){return[]}}
+function saveUsers(u){localStorage.setItem(LS_USERS,JSON.stringify(u))}
+function getSession(){try{return JSON.parse(localStorage.getItem(LS_SESSION)||'null')}catch(e){return null}}
+function saveSession(u){localStorage.setItem(LS_SESSION,JSON.stringify(u))}
+function clearSession(){localStorage.removeItem(LS_SESSION)}
+function getLogs(un){try{return JSON.parse(localStorage.getItem(LS_LOGS+un)||'[]')}catch(e){return[]}}
+function addLog(un,log){var logs=getLogs(un);logs.push(log);localStorage.setItem(LS_LOGS+un,JSON.stringify(logs))}
+function syncUser(un,fields){
+  var users=getUsers(),idx=users.findIndex(function(u){return u.username.toLowerCase()===un.toLowerCase()});
+  if(idx!==-1){Object.keys(fields).forEach(function(k){users[idx][k]=fields[k]});saveUsers(users)}
+}
+
+// ── CATEGORY ──
+var CAT_STYLE={
+  'ธรรมชาติ':{i:'🌿',bg:'#dcfce7',cl:'#15803d'},
+  'วัด':{i:'🙏',bg:'#fef9ee',cl:'#b45309'},
+  'คาเฟ่':{i:'☕',bg:'#fff7ed',cl:'#c2410c'},
+  'แลนด์มาร์ค':{i:'📸',bg:'#f5f3ff',cl:'#6d28d9'},
+  'OTOP':{i:'🛍️',bg:'#fdf2f8',cl:'#be185d'},
+  'เกษตร':{i:'🌾',bg:'#f7fee7',cl:'#4d7c0f'},
+  'กีฬา':{i:'🏃',bg:'#eff6ff',cl:'#1d4ed8'},
+  'อื่นๆ':{i:'📍',bg:'#f8fafc',cl:'#64748b'}
+};
+function catKey(cat){
+  var c=(cat||'').toLowerCase();
+  if(c.indexOf('ธรรมชาติ')!==-1||c.indexOf('รุกขชาติ')!==-1)return'ธรรมชาติ';
+  if(c.indexOf('วัด')!==-1||c.indexOf('ศาสนา')!==-1)return'วัด';
+  if(c.indexOf('คาเฟ่')!==-1||c.indexOf('อาหาร')!==-1)return'คาเฟ่';
+  if(c.indexOf('แลนด์มาร์ค')!==-1||c.indexOf('ชมวิว')!==-1)return'แลนด์มาร์ค';
+  if(c.indexOf('otop')!==-1||c.indexOf('สินค้า')!==-1)return'OTOP';
+  if(c.indexOf('เกษตร')!==-1)return'เกษตร';
+  if(c.indexOf('กีฬา')!==-1||c.indexOf('นันทนาการ')!==-1||c.indexOf('ออกกำลัง')!==-1)return'กีฬา';
+  return'อื่นๆ';
+}
+function cs(cat){return CAT_STYLE[catKey(cat)]||CAT_STYLE['อื่นๆ']}
+
+// ── AUTH ──
+function switchAuthTab(t){
+  var iL=t==='login';
+  document.getElementById('loginForm').style.display=iL?'block':'none';
+  document.getElementById('registerForm').style.display=iL?'none':'block';
+  document.querySelectorAll('.auth-tab').forEach(function(b,i){b.classList.toggle('active',iL?i===0:i===1)});
+}
+function doLogin(){
+  var u=document.getElementById('loginUser').value.trim();
+  var p=document.getElementById('loginPass').value.trim();
+  if(!u||!p){showMsg('loginMsg','กรุณากรอกข้อมูลให้ครบ','error');return}
+  var found=getUsers().find(function(x){return x.username===u&&x.password===p});
+  if(found){
+    user={username:found.username,coins:found.coins||0,equippedItems:found.equippedItems||'none,none,none',ownedItems:found.ownedItems||''};
+    saveSession(user);toast('ยินดีต้อนรับ '+user.username+' 👋');enterApp();
+  }else showMsg('loginMsg','ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง','error');
+}
+function doRegister(){
+  var u=document.getElementById('regUser').value.trim();
+  var p=document.getElementById('regPass').value.trim();
+  var c=document.getElementById('regConfirm').value.trim();
+  if(!u||!p||!c){showMsg('regMsg','กรุณากรอกข้อมูลให้ครบ','error');return}
+  if(p!==c){showMsg('regMsg','รหัสผ่านไม่ตรงกัน','error');return}
+  if(u.length<3){showMsg('regMsg','ชื่อต้องมีอย่างน้อย 3 ตัว','error');return}
+  if(p.length<4){showMsg('regMsg','รหัสผ่านต้องมีอย่างน้อย 4 ตัว','error');return}
+  var users=getUsers();
+  if(users.find(function(x){return x.username.toLowerCase()===u.toLowerCase()})){showMsg('regMsg','ชื่อผู้ใช้นี้ถูกใช้ไปแล้ว','error');return}
+  var nu={username:u,password:p,coins:100,equippedItems:'none,none,none',ownedItems:''};
+  users.push(nu);saveUsers(users);
+  user={username:u,coins:100,equippedItems:'none,none,none',ownedItems:''};saveSession(user);
+  showMsg('regMsg','🎉 สมัครสำเร็จ! ได้รับ 100 เหรียญ','success');
+  setTimeout(enterApp,1200);
+}
+function doLogout(){
+  clearSession();user=null;userLogs=[];planPlaces=[];doneSet=new Set();
+  document.getElementById('mainApp').style.display='none';
+  document.getElementById('authScreen').style.display='flex';
+  document.getElementById('loginUser').value='';document.getElementById('loginPass').value='';
+  switchAuthTab('login');
+}
+
+// ── ENTER APP ──
+function enterApp(){
+  document.getElementById('authScreen').style.display='none';
+  document.getElementById('mainApp').style.display='block';
+  var eq=(user.equippedItems||'none,none,none').split(',');
+  equipped={hat:eq[0]||'none',glasses:eq[1]||'none',bag:eq[2]||'none'};
+  ownedItems=user.ownedItems?user.ownedItems.split(',').filter(Boolean):[];
+  userLogs=getLogs(user.username);
+  doneSet=new Set(userLogs.map(function(l){return l.missionId}));
+  loadCustomData();renderHighlights();
+  updateCoins();
+  document.getElementById('profName').textContent=user.username;
+  document.getElementById('profCoins').textContent=user.coins;
+  document.getElementById('stDone').textContent=userLogs.length;
+  updateAllMascots();buildDistChips();renderPackages();renderPlaces(PLACES);renderMissions();renderGallery();
+}
+
+// ── PLACES ──
+function buildDistChips(){
+  var dm={};
+  PLACES.forEach(function(p){var d=p.district.replace('อำเภอ','').trim();if(d)dm[d]=1});
+  var dc=document.getElementById('distChips');
+  Object.keys(dm).sort().forEach(function(d){
+    var el=document.createElement('div');
+    el.className='chip chip-dist';el.textContent='📍 '+d;
+    el.onclick=function(){setDist(d,this)};dc.appendChild(el);
+  });
+}
+function setCat(f,el){curCat=f;document.querySelectorAll('#catChips .chip').forEach(function(c){c.classList.remove('active')});el.classList.add('active');filterPlaces()}
+function setDist(d,el){curDist=d;document.querySelectorAll('#distChips .chip').forEach(function(c){c.classList.remove('active')});el.classList.add('active');filterPlaces()}
+function filterPlaces(){
+  var q=document.getElementById('searchInput').value.toLowerCase();
+  renderPlaces(PLACES.filter(function(p){
+    return(curCat==='all'||catKey(p.category)===curCat)&&
+           (curDist==='all'||p.district.replace('อำเภอ','').trim()===curDist)&&
+           (!q||p.name.toLowerCase().indexOf(q)!==-1||p.district.toLowerCase().indexOf(q)!==-1||p.highlights.toLowerCase().indexOf(q)!==-1);
+  }));
+}
+function renderPlaces(places){
+  filteredPlaces=places.slice();
+  var grid=document.getElementById('placesGrid');
+  if(!places.length){grid.innerHTML='<div class="empty-box" style="grid-column:1/-1"><div class="ei">🔍</div><p>ไม่พบสถานที่</p></div>';return}
+  grid.innerHTML=places.map(function(p,i){
+    var s=cs(p.category),inP=planPlaces.some(function(x){return x.id===p.id});
+    var imgHtml=p.img
+      ?'<img class="pc-img" src="'+esc(p.img)+'" alt="'+esc(p.name)+'" loading="lazy">'
+      :'<div class="pc-img-ph" style="background:'+s.bg+'">'+s.i+'</div>';
+    return'<div class="place-card'+(inP?' in-plan':'')+'" onclick="openTripModal('+i+')">'+
+      imgHtml+
+      '<div class="pc-row"><div class="pc-name">'+esc(p.name)+'</div>'+
+      '<span class="pc-badge" style="background:'+s.bg+';color:'+s.cl+'">'+s.i+' '+catKey(p.category)+'</span></div>'+
+      '<div class="pc-dist">📍 '+esc(p.district)+'</div>'+
+      '<div class="pc-hl">'+esc(p.highlights||'')+'</div>'+
+      '<button class="btn-plan-add'+(inP?' added':'')+'" onclick="event.stopPropagation();togglePlan('+i+')">'+(inP?'✓':'+')+'</button></div>';
+  }).join('');
+}
+
+// ── PLAN ──
+function togglePlan(idx){
+  var p=filteredPlaces[idx],i=planPlaces.findIndex(function(x){return x.id===p.id});
+  if(i===-1){planPlaces.push(p);toast('✅ เพิ่ม '+p.name+' แล้ว')}
+  else{planPlaces.splice(i,1);toast('🗑️ ลบออกจากแผน')}
+  renderPlaces(filteredPlaces);renderPlan();renderMissions();
+}
+function clearPlan(){if(confirm('ล้างแผนทริปทั้งหมด?')){planPlaces=[];renderPlaces(filteredPlaces);renderPlan();renderMissions();clearPlanFilter()}}
+function clearPlanFilter(){document.getElementById('planNotice').style.display='none';renderMissions()}
+function navToFirst(){if(!planPlaces.length)return;var p=planPlaces[0];window.open('https://maps.google.com/?q='+p.lat+','+p.lon,'_blank')}
+function renderPlan(){
+  var cnt=planPlaces.length;
+  document.getElementById('planCount').textContent=cnt;
+  var rb=document.getElementById('planRouteBox'),ar=document.getElementById('planActionRow');
+  if(!cnt){document.getElementById('planList').innerHTML='<div class="empty-box"><div class="ei">🗺️</div><p>ยังไม่มีสถานที่ในแผน</p></div>';rb.style.display='none';ar.style.display='none';document.getElementById('planDist').textContent='0';return}
+  var td=0;
+  for(var i=0;i<planPlaces.length-1;i++){var a=planPlaces[i],b=planPlaces[i+1];if(a.lat&&b.lat)td+=haversine(a.lat,a.lon,b.lat,b.lon)}
+  document.getElementById('planDist').textContent=td.toFixed(1);
+  document.getElementById('planList').innerHTML=planPlaces.map(function(p,i){
+    var s=cs(p.category);
+    return'<div class="plan-card"><div class="plan-num">'+(i+1)+'</div><div class="plan-info">'+
+      '<div class="plan-name">'+s.i+' '+esc(p.name)+'</div>'+
+      '<div class="plan-dist-txt">📍 '+esc(p.district)+'</div>'+
+      '<div class="plan-hl">'+esc((p.highlights||'').substring(0,70))+'</div></div>'+
+      '<button class="btn-plan-remove" onclick="removePlanIdx('+i+')">✕</button></div>';
+  }).join('');
+  buildRouteTimeline();rb.style.display='block';ar.style.display='flex';
+  document.getElementById('planNotice').style.display='block';
+}
+function removePlanIdx(i){planPlaces.splice(i,1);renderPlaces(filteredPlaces);renderPlan();renderMissions()}
+function buildRouteTimeline(){
+  var h='<div class="route-item"><div class="route-dot s">📍</div><div><div class="route-name">ตำแหน่งของคุณ</div><div class="route-detail">จุดเริ่มต้น</div></div></div>';
+  planPlaces.forEach(function(p,i){
+    var dt='',isL=i===planPlaces.length-1;
+    if(i>0&&planPlaces[i-1].lat&&p.lat){var d=haversine(planPlaces[i-1].lat,planPlaces[i-1].lon,p.lat,p.lon);dt=d<1?Math.round(d*1000)+' ม.':d.toFixed(1)+' กม.'}
+    h+='<div class="route-line"></div><div class="route-item"><div class="route-dot '+(isL?'e':'m')+'">'+(i+1)+'</div><div><div class="route-name">'+esc(p.name)+'</div><div class="route-detail">'+esc(p.district)+(dt?' · ห่าง '+dt:'')+'</div></div></div>';
+  });
+  document.getElementById('planRoute').innerHTML=h;
+}
+function copyPlan(){
+  var t='🌟 แผนทริป Moshi Go!\n══════════\n📍 เริ่ม: ตำแหน่งของฉัน\n\n';
+  planPlaces.forEach(function(p,i){t+=(i+1)+'. '+p.name+'\n   📍 '+p.district+'\n   ✨ '+(p.highlights||'').substring(0,60)+'\n\n'});
+  copyText(t+'── Moshi Go! 🌟 ──');
+}
+
+// ── HAVERSINE ──
+function haversine(lat1,lon1,lat2,lon2){
+  var R=6371,dL=(lat2-lat1)*Math.PI/180,dN=(lon2-lon1)*Math.PI/180;
+  var sl=Math.sin(dL/2),sn=Math.sin(dN/2);
+  var a=sl*sl+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*sn*sn;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+// ── TRIP MODAL ──
+function openTripModal(idx){
+  curPlace=filteredPlaces[idx];curNearby=[];
+  document.getElementById('tripName').textContent=curPlace.name;
+  document.getElementById('tripDist').textContent='📍 '+curPlace.district;
+  document.getElementById('tripHl').textContent=curPlace.highlights||'';
+  document.getElementById('btnGo').href=curPlace.lat?'https://maps.google.com/?q='+curPlace.lat+','+curPlace.lon:'https://maps.google.com/?q='+encodeURIComponent(curPlace.name+' สระแก้ว');
+  document.getElementById('nearbyList').innerHTML='<div style="font-size:12px;color:var(--txl);text-align:center;padding:8px">กำลังค้นหา...</div>';
+  if(curPlace.lat&&curPlace.lon)findNearby(curPlace.lat,curPlace.lon,curPlace.name);
+  else{document.getElementById('nearbyList').innerHTML='<div style="font-size:12px;color:var(--txl);padding:10px;background:var(--bg);border-radius:10px">ไม่มีข้อมูลพิกัด</div>';buildTripTimeline([])}
+  document.getElementById('tripModal').classList.add('show');document.body.style.overflow='hidden';
+}
+function closeTripModal(ev){if(!ev||ev.target===document.getElementById('tripModal')){document.getElementById('tripModal').classList.remove('show');document.body.style.overflow=''}}
+function findNearby(lat,lon,name){
+  var res=[];
+  PLACES.forEach(function(p){
+    if(!p.lat||p.name===name)return;
+    var d=haversine(lat,lon,p.lat,p.lon);
+    if(d<=5){var np=Object.assign({},p);np.distance=d;res.push(np)}
+  });
+  res.sort(function(a,b){return a.distance-b.distance});curNearby=res.slice(0,5);
+  document.getElementById('nearbyList').innerHTML=curNearby.length?curNearby.map(function(p){
+    var dt=p.distance<1?Math.round(p.distance*1000)+' ม.':p.distance.toFixed(1)+' กม.';
+    return'<div class="nearby-card"><div><div class="nc-name">'+cs(p.category).i+' '+esc(p.name)+'</div><div class="nc-dist">ห่าง '+dt+' · '+esc(p.district)+'</div></div>'+
+      '<a class="btn-nav-small" href="https://maps.google.com/?q='+p.lat+','+p.lon+'" target="_blank">นำทาง</a></div>';
+  }).join(''):'<div style="font-size:12px;color:var(--txl);padding:10px;background:var(--bg);border-radius:10px">ไม่มีสถานที่ใกล้เคียงในรัศมี 5 กม.</div>';
+  buildTripTimeline(curNearby);
+}
+function buildTripTimeline(nearby){
+  function tlBtn(id){var inP=planPlaces.some(function(x){return x.id===id});return'<button class="btn-tl-add'+(inP?' in':'')+'" onclick="addFromTimeline(\''+id+'\')">'+(inP?'✓':'＋')+'</button>'}
+  var h='<div class="tl-item"><div class="tl-dot s">📍</div><div style="flex:1"><div class="tl-place">ตำแหน่งของคุณ</div><div class="tl-detail">จุดเริ่มต้น</div></div></div>';
+  nearby.forEach(function(p,i){
+    var dt=p.distance<1?Math.round(p.distance*1000)+' ม.':p.distance.toFixed(1)+' กม.';
+    h+='<div class="tl-line"></div><div class="tl-item"><div class="tl-dot m">'+(i+1)+'</div><div style="flex:1"><div class="tl-place">'+esc(p.name)+'</div><div class="tl-detail">ห่าง '+dt+'</div></div>'+tlBtn(p.id)+'</div>';
+  });
+  var inMain=planPlaces.some(function(x){return x.id===curPlace.id});
+  h+='<div class="tl-line"></div><div class="tl-item"><div class="tl-dot e">🏁</div><div style="flex:1"><div class="tl-place">'+esc(curPlace.name)+'</div><div class="tl-detail">'+esc(curPlace.district)+' · จุดหมายหลัก</div></div>'+tlBtn(curPlace.id)+'</div>';
+  document.getElementById('tripTimeline').innerHTML=h;
+}
+function addFromTimeline(placeId){
+  var p=PLACES.find(function(x){return x.id===placeId});if(!p)return;
+  var i=planPlaces.findIndex(function(x){return x.id===placeId});
+  if(i===-1){planPlaces.push(p);toast('＋ เพิ่ม '+p.name+' แล้ว!')}
+  else{planPlaces.splice(i,1);toast('✕ ลบ '+p.name+' ออก')}
+  buildTripTimeline(curNearby);renderPlaces(filteredPlaces);renderPlan();renderMissions();renderPackages();
+}
+function copyTrip(){
+  var t='🌟 Moshi Go!\n📍 เริ่ม: ตำแหน่งของฉัน\n';
+  if(curNearby.length){t+='\n⚡ แวะระหว่างทาง:\n';curNearby.forEach(function(p,i){var dt=p.distance<1?Math.round(p.distance*1000)+' ม.':p.distance.toFixed(1)+' กม.';t+='  '+(i+1)+'. '+p.name+' ('+dt+')\n'})}
+  t+='\n🏁 จุดหมาย: '+curPlace.name+'\n── Moshi Go! ──';
+  copyText(t);
+}
+
+// ── MISSIONS ──
+function renderMissions(){
+  doneSet=new Set(userLogs.map(function(l){return l.missionId}));
+  var list=MISSIONS;
+  if(planPlaces.length){var names=new Set(planPlaces.map(function(p){return p.name}));list=MISSIONS.filter(function(m){return names.has(m.placeName)})}
+  renderedMissions=list.slice();
+  var grid=document.getElementById('missionsGrid');
+  if(!list.length){grid.innerHTML='<div class="empty-box"><div class="ei">🎯</div><p>ยังไม่มีภารกิจ</p></div>';return}
+  grid.innerHTML=list.map(function(m,i){
+    var d=doneSet.has(m.missionId);
+    return'<div class="mission-card '+(d?'done':'pending')+'" onclick="openMission('+i+')">'+
+      '<div class="mc-row"><div class="mc-place">'+esc(m.placeName)+'</div><div class="mc-reward">🪙 '+m.rewardCoins+'</div></div>'+
+      '<div class="mc-task">📷 '+esc(m.taskName||'ถ่ายรูปและเช็คอิน')+'</div>'+
+      '<span class="mc-status '+(d?'done':'pending')+'">'+(d?'✅ สำเร็จแล้ว':'⏳ รอทำภารกิจ')+'</span></div>';
+  }).join('');
+}
+function openMission(idx){
+  curMission=renderedMissions[idx];var done=doneSet.has(curMission.missionId);photoB64=null;
+  document.getElementById('mmPlace').textContent=curMission.placeName;
+  document.getElementById('mmTask').textContent='📷 '+(curMission.taskName||'ถ่ายรูปและเช็คอิน');
+  document.getElementById('mmDoneAlert').style.display=done?'block':'none';
+  document.getElementById('mmSuccess').style.display='none';
+  document.getElementById('mmUpload').style.display='block';
+  document.getElementById('photoPreview').style.display='none';
+  document.getElementById('photoInput').value='';
+  document.getElementById('btnSubmit').disabled=true;
+  document.getElementById('btnSubmit').style.display=done?'none':'block';
+  var ua=document.getElementById('uploadArea');ua.classList.remove('has-img');
+  ua.innerHTML='<div class="upload-icon">📷</div><div class="upload-txt">กดเพื่อเลือกรูปภาพ</div>';
+  document.getElementById('missionModal').classList.add('show');document.body.style.overflow='hidden';
+}
+function closeMissionModal(ev){if(!ev||ev.target===document.getElementById('missionModal')){document.getElementById('missionModal').classList.remove('show');document.body.style.overflow=''}}
+function triggerUpload(){document.getElementById('photoInput').click()}
+function previewPhoto(ev){
+  var file=ev.target.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var img=new Image();
+    img.onload=function(){
+      var c=document.createElement('canvas'),MAX=800,w=img.width,h=img.height;
+      if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX}else{w=Math.round(w*MAX/h);h=MAX}}
+      c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
+      var b64=c.toDataURL('image/jpeg',.7);photoB64=b64.split(',')[1];
+      var prev=document.getElementById('photoPreview');prev.src=b64;prev.style.display='block';
+      var ua=document.getElementById('uploadArea');ua.innerHTML='<div class="upload-txt" style="color:var(--pd)">✅ เลือกรูปแล้ว</div>';ua.classList.add('has-img');
+      document.getElementById('btnSubmit').disabled=false;
+    };img.src=e.target.result;
+  };reader.readAsDataURL(file);
+}
+function doSubmitMission(){
+  if(!photoB64||!curMission)return;
+  var btn=document.getElementById('btnSubmit');btn.disabled=true;btn.textContent='กำลังบันทึก...';
+  setTimeout(function(){
+    var log={missionId:curMission.missionId,placeName:curMission.placeName,imageData:'data:image/jpeg;base64,'+photoB64,timestamp:new Date().toLocaleString('th-TH')};
+    addLog(user.username,log);
+    var nc=user.coins+50;user.coins=nc;syncUser(user.username,{coins:nc});saveSession(user);
+    userLogs.push(log);doneSet.add(curMission.missionId);
+    updateCoins();document.getElementById('profCoins').textContent=nc;document.getElementById('stDone').textContent=userLogs.length;
+    document.getElementById('mmUpload').style.display='none';document.getElementById('mmSuccess').style.display='block';
+    btn.disabled=false;btn.textContent='ส่งรูปภาพ 🚀';
+    renderMissions();renderGallery();toast('🎉 ภารกิจสำเร็จ! +50 เหรียญ');
+  },600);
+}
+
+// ── GALLERY ──
+function renderGallery(){
+  var g=document.getElementById('galleryGrid'),wi=userLogs.filter(function(l){return l.imageData});
+  if(!wi.length){g.innerHTML='<div class="gallery-empty">ยังไม่มีรูป ออกไปทำภารกิจกันเถอะ! 📸</div>';return}
+  g.innerHTML=wi.slice().reverse().map(function(l){
+    return'<div class="gallery-item" onclick="window.open(\''+l.imageData.substring(0,30)+'...\',\'_blank\')" style="cursor:pointer" ondblclick="viewImg(this)" data-src="'+escAttr(l.imageData)+'">'+
+      '<img src="'+l.imageData+'" alt="'+esc(l.placeName)+'" loading="lazy">'+
+      '<div class="gallery-place">'+esc(l.placeName)+'</div></div>';
+  }).join('');
+}
+function viewImg(el){var src=el.getAttribute('data-src');if(src){var w=window.open('','_blank');w.document.write('<img src="'+src+'" style="max-width:100%">')}}
+
+// ── WARDROBE ──
+function updateAllMascots(){
+  var h=equipped.hat!=='none'?(findItem(equipped.hat)||{}).emoji||'':'';
+  var gl=equipped.glasses!=='none'?(findItem(equipped.glasses)||{}).emoji||'':'';
+  var b=equipped.bag!=='none'?(findItem(equipped.bag)||{}).emoji||'':'';
+  ['slotHat','pSlotHat'].forEach(function(id){document.getElementById(id).textContent=h});
+  ['slotGlasses','pSlotGlasses'].forEach(function(id){document.getElementById(id).textContent=gl});
+  ['slotBag','pSlotBag'].forEach(function(id){document.getElementById(id).textContent=b});
+  var mw=document.getElementById('mascotMain');
+  if(mw){mw.classList.remove('pop');void mw.offsetWidth;mw.classList.add('pop')}
+}
+function findItem(id){return SHOP.find(function(x){return x.id===id})}
+function setShopSlot(slot,el){curShopSlot=slot;document.querySelectorAll('.slot-tab').forEach(function(b){b.classList.remove('active')});el.classList.add('active');renderShop()}
+function renderShop(){
+  var items=SHOP.filter(function(x){return x.slot===curShopSlot});
+  document.getElementById('shopGrid').innerHTML=items.map(function(item){
+    var owned=ownedItems.indexOf(item.id)!==-1,isEq=equipped[item.slot]===item.id;
+    var tag='',bc='',bt='';
+    if(isEq){tag='<span class="shop-tag equipped">✨ สวมอยู่</span>';bc='btn-equipped-label';bt='กำลังสวม'}
+    else if(owned){tag='<span class="shop-tag owned">✅ มีแล้ว</span>';bc='btn-equip';bt='สวมใส่'}
+    else{bc='btn-buy';bt='🪙 '+item.price}
+    return'<div class="shop-card'+(owned?' owned':'')+(isEq?' equipped':'')+'">'+tag+
+      '<span class="shop-emoji">'+item.emoji+'</span>'+
+      '<div class="shop-name">'+esc(item.name)+'</div>'+
+      '<div class="shop-desc">'+esc(item.desc)+'</div>'+
+      '<button class="btn-shop '+bc+'" onclick="shopAction(\''+item.id+'\')">'+bt+'</button></div>';
+  }).join('');
+}
+function shopAction(itemId){
+  var item=findItem(itemId);if(!item)return;
+  var owned=ownedItems.indexOf(itemId)!==-1,isEq=equipped[item.slot]===itemId;
+  if(isEq){
+    equipped[item.slot]='none';updateAllMascots();saveEquipped();renderShop();toast('ถอด '+item.name+' ออกแล้ว');
+  }else if(owned){
+    equipped[item.slot]=itemId;updateAllMascots();saveEquipped();renderShop();toast('✨ สวม '+item.name+' แล้ว!');
+  }else{
+    if(user.coins<item.price){toast('🪙 เหรียญไม่พอ! ต้องการ '+item.price+' เหรียญ');return}
+    var nc=user.coins-item.price;ownedItems.push(itemId);equipped[item.slot]=itemId;
+    var eq=equipped.hat+','+equipped.glasses+','+equipped.bag,os=ownedItems.join(',');
+    user.coins=nc;user.equippedItems=eq;user.ownedItems=os;
+    syncUser(user.username,{coins:nc,equippedItems:eq,ownedItems:os});saveSession(user);
+    updateCoins();document.getElementById('profCoins').textContent=nc;
+    updateAllMascots();renderShop();toast('🎉 ซื้อและสวม '+item.name+' แล้ว!');
+  }
+}
+function saveEquipped(){
+  var eq=equipped.hat+','+equipped.glasses+','+equipped.bag;
+  user.equippedItems=eq;syncUser(user.username,{equippedItems:eq});saveSession(user);
+}
+
+// ── UI HELPERS ──
+function switchTab(name,el){
+  document.querySelectorAll('.tab-panel').forEach(function(t){t.classList.remove('active')});
+  document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active')});
+  document.getElementById('tab-'+name).classList.add('active');el.classList.add('active');
+  if(name==='wardrobe')renderShop();
+  if(name==='plan')renderPlan();
+  if(name==='shops')renderShopsLocal();
+}
+function updateCoins(){document.getElementById('coinsNum').textContent=user.coins}
+function showMsg(id,txt,type){var el=document.getElementById(id);el.className='msg-box '+type;el.textContent=txt;setTimeout(function(){el.className='';el.textContent=''},4000)}
+function toast(txt){var el=document.getElementById('toast');el.textContent=txt;el.classList.add('show');setTimeout(function(){el.classList.remove('show')},2500)}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function escAttr(s){return String(s||'').replace(/"/g,'&quot;')}
+function copyText(txt){
+  if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(txt).then(function(){toast('📋 คัดลอกแล้ว!')})}
+  else{var t=document.createElement('textarea');t.value=txt;t.style.cssText='position:fixed;opacity:0';document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);toast('📋 คัดลอกแล้ว!')}
+}
+
+// ── HIGHLIGHTS ──
+function renderHighlights(){
+  var row=document.getElementById('hlRow');if(!row)return;
+  var featured=[];
+  try{var ids=JSON.parse(localStorage.getItem('moshi_featured')||'[]');
+    ids.forEach(function(id){var p=PLACES.find(function(x){return x.id===id});if(p)featured.push(p)});
+  }catch(e){}
+  if(!featured.length)featured=PLACES.filter(function(p){return p.type==='Main'}).slice(0,10);
+  var gradients=['linear-gradient(135deg,#534AB7,#8B7FD4)','linear-gradient(135deg,#1D9E75,#4CC9A0)','linear-gradient(135deg,#D85A30,#F5956A)','linear-gradient(135deg,#185FA5,#4DA0E8)','linear-gradient(135deg,#7c3aed,#a78bfa)','linear-gradient(135deg,#b45309,#F5C242)'];
+  row.innerHTML=featured.map(function(p,i){
+    var s=cs(p.category);
+    var inner=p.img
+      ?'<img src="'+esc(p.img)+'" alt="'+esc(p.name)+'" loading="lazy"><div class="hl-overlay">'
+      :'<div class="hl-no-img" style="background:'+gradients[i%gradients.length]+'">'+s.i+'</div><div class="hl-overlay">';
+    var pIdx=PLACES.indexOf(p);
+    return'<div class="hl-card" onclick="openTripModal('+pIdx+')">'+inner+
+      '<div class="hl-badge">'+s.i+' '+catKey(p.category)+'</div>'+
+      '<div class="hl-name">'+esc(p.name)+'<div class="hl-dist">'+esc(p.district)+'</div></div>'+
+    '</div></div>';
+  }).join('');
+}
+
+// ── PACKAGES ──
+function renderPackages(){
+  var row=document.getElementById('pkgRow');if(!row)return;
+  row.innerHTML=TRIP_PACKAGES.map(function(pkg,i){
+    var places=pkg.placeIds.map(function(id){return PLACES.find(function(p){return p.id===id})}).filter(Boolean);
+    var missions=places.filter(function(p){return MISSIONS.some(function(m){return m.placeName===p.name})});
+    var allIn=places.length&&places.every(function(p){return planPlaces.some(function(x){return x.id===p.id})});
+    return'<div class="pkg-card" style="border-top-color:'+pkg.color+'">'+
+      '<div class="pkg-name">'+esc(pkg.name)+'</div>'+
+      '<div class="pkg-meta">'+places.length+' ที่ · '+pkg.time+' · '+missions.length+' ภารกิจ</div>'+
+      '<div class="pkg-places">'+esc(pkg.desc)+'</div>'+
+      '<button class="btn-pkg'+(allIn?' added':'')+'" onclick="addPackage('+i+')">'+(allIn?'✓ เพิ่มแล้ว':'+ เพิ่มทั้งหมด')+'</button>'+
+    '</div>';
+  }).join('');
+}
+function addPackage(idx){
+  var pkg=TRIP_PACKAGES[idx];
+  var places=pkg.placeIds.map(function(id){return PLACES.find(function(p){return p.id===id})}).filter(Boolean);
+  var added=0;
+  places.forEach(function(p){if(!planPlaces.some(function(x){return x.id===p.id})){planPlaces.push(p);added++}});
+  renderPackages();renderPlaces(filteredPlaces);renderPlan();renderMissions();
+  toast(added>0?'✅ เพิ่ม '+added+' สถานที่ใน "'+pkg.name+'" แล้ว':'ℹ️ ทุกที่อยู่ในแผนแล้ว');
+}
+
+// ── LOCAL SHOPS & COUPONS ──
+var curCoupon=null;
+function getRedemptions(un){try{return JSON.parse(localStorage.getItem('moshi_red_'+un)||'[]')}catch(e){return[]}}
+function isToday(ts){var d=new Date(ts),n=new Date();return d.toDateString()===n.toDateString()}
+function renderShopsLocal(){
+  var grid=document.getElementById('localShopsGrid');if(!grid)return;
+  var reds=getRedemptions(user.username);
+  grid.innerHTML=SHOPS_LOCAL.map(function(shop,i){
+    var usedToday=reds.some(function(r){return r.shopId===shop.id&&isToday(r.ts)});
+    var canAfford=user.coins>=shop.coins;
+    var btnTxt=usedToday?'✓ ใช้แล้ววันนี้':(!canAfford?'เหรียญไม่พอ':'แลกคูปอง 🎟️');
+    return'<div class="lsc">'+
+      '<div class="lsc-row">'+
+      '<div class="lsc-icon" style="background:'+shop.bg+'">'+shop.e+'</div>'+
+      '<div style="flex:1">'+
+      '<span class="lsc-cat" style="background:'+shop.bg+';color:'+shop.cl+'">'+esc(shop.cat)+'</span>'+
+      '<div class="lsc-name">'+esc(shop.name)+'</div>'+
+      '<div class="lsc-desc">'+esc(shop.desc)+'</div>'+
+      '</div></div>'+
+      '<div class="lsc-foot">'+
+      '<div><div class="lsc-price">🪙 '+shop.coins+' เหรียญ</div><div class="lsc-disc">'+esc(shop.discount)+'</div></div>'+
+      '<button class="btn-redeem" onclick="redeemShop('+i+')" '+(usedToday||!canAfford?'disabled':'')+'>'+btnTxt+'</button>'+
+      '</div></div>';
+  }).join('');
+}
+function redeemShop(idx){
+  var shop=SHOPS_LOCAL[idx];
+  if(user.coins<shop.coins){toast('🪙 เหรียญไม่พอ!');return}
+  var ts=Date.now();
+  var code='MSH-'+user.username.substring(0,3).toUpperCase()+'-'+shop.id+'-'+ts.toString(36).toUpperCase().slice(-5);
+  var nc=user.coins-shop.coins;
+  user.coins=nc;syncUser(user.username,{coins:nc});saveSession(user);
+  var reds=getRedemptions(user.username);
+  reds.push({shopId:shop.id,shopName:shop.name,code:code,discount:shop.discount,coins:shop.coins,ts:ts});
+  localStorage.setItem('moshi_red_'+user.username,JSON.stringify(reds));
+  updateCoins();document.getElementById('profCoins').textContent=nc;
+  curCoupon=code;
+  document.getElementById('cpShopName').textContent=shop.name;
+  document.getElementById('cpDiscount').textContent=shop.discount;
+  document.getElementById('cpCode').textContent=code;
+  document.getElementById('cpInfo').innerHTML='วันที่: '+new Date(ts).toLocaleDateString('th-TH')+' · ใช้ได้วันนี้เท่านั้น<br>📱 แสดงหน้าจอนี้ให้ร้านค้าสแกน';
+  document.getElementById('couponModal').classList.add('show');
+  renderShopsLocal();toast('🎟️ แลกคูปองสำเร็จ!');
+}
+function copyCoupon(){if(curCoupon)copyText(curCoupon);toast('📋 คัดลอกรหัสแล้ว!')}
+function closeCoupon(){document.getElementById('couponModal').classList.remove('show')}
+
+// ── ADMIN PANEL ──
+var ADMIN_PW='moshi-admin'; // ← เปลี่ยนรหัสผ่านได้ตรงนี้
+var customPlaces=[],customShops=[],editPlaceIdx=-1,editShopIdx=-1;
+
+function editCP(i){
+  editPlaceIdx=i;var p=customPlaces[i];
+  document.getElementById('af-name').value=p.name||'';
+  document.getElementById('af-dist').value=p.district||'';
+  document.getElementById('af-cat').value=p.category||'ร้านอาหารและคาเฟ่';
+  document.getElementById('af-lat').value=p.lat||'';
+  document.getElementById('af-lon').value=p.lon||'';
+  document.getElementById('af-hl').value=p.highlights||'';
+  document.getElementById('af-img').value=p.img||'';
+  document.getElementById('af-submit-btn').textContent='💾 บันทึกการแก้ไข';
+  document.getElementById('af-cancel-btn').style.display='block';
+  document.getElementById('adm-pc').querySelector('.adm-form').scrollIntoView({behavior:'smooth'});
+}
+function cancelEditPlace(){
+  editPlaceIdx=-1;
+  ['af-name','af-dist','af-lat','af-lon','af-hl','af-img'].forEach(function(id){document.getElementById(id).value=''});
+  document.getElementById('af-submit-btn').textContent='เพิ่มสถานที่';
+  document.getElementById('af-cancel-btn').style.display='none';
+  document.getElementById('af-msg').className='';document.getElementById('af-msg').textContent='';
+}
+function editCS(i){
+  editShopIdx=i;var s=SHOPS_LOCAL[i];
+  document.getElementById('sf-name').value=s.name||'';
+  document.getElementById('sf-cat').value=s.cat||'';
+  document.getElementById('sf-desc').value=s.desc||'';
+  document.getElementById('sf-disc').value=s.discount||'';
+  document.getElementById('sf-coins').value=s.coins||50;
+  document.getElementById('sf-lat').value=s.lat||'';
+  document.getElementById('sf-lon').value=s.lon||'';
+  document.getElementById('sf-submit-btn').textContent='💾 บันทึกการแก้ไข';
+  document.getElementById('sf-cancel-btn').style.display='block';
+  document.getElementById('adm-sc').querySelector('.adm-form').scrollIntoView({behavior:'smooth'});
+}
+function cancelEditShop(){
+  editShopIdx=-1;
+  ['sf-name','sf-cat','sf-desc','sf-disc','sf-coins','sf-lat','sf-lon'].forEach(function(id){document.getElementById(id).value=''});
+  document.getElementById('sf-submit-btn').textContent='เพิ่มร้านค้า';
+  document.getElementById('sf-cancel-btn').style.display='none';
+  document.getElementById('sf-msg').className='';document.getElementById('sf-msg').textContent='';
+}
+
+function loadCustomData(){
+  try{customPlaces=JSON.parse(localStorage.getItem('moshi_cplaces')||'[]')}catch(e){customPlaces=[]}
+  try{customShops=JSON.parse(localStorage.getItem('moshi_cshops')||'[]')}catch(e){customShops=[]}
+  customPlaces.forEach(function(p){if(!PLACES.find(function(x){return x.id===p.id}))PLACES.push(p)});
+  customShops.forEach(function(s){if(!SHOPS_LOCAL.find(function(x){return x.id===s.id}))SHOPS_LOCAL.push(s)});
+  var edits={};try{edits=JSON.parse(localStorage.getItem('moshi_sedit')||'{}')}catch(e){}
+  var hidden=[];try{hidden=JSON.parse(localStorage.getItem('moshi_shide')||'[]')}catch(e){}
+  for(var i=SHOPS_LOCAL.length-1;i>=0;i--){
+    if(hidden.indexOf(SHOPS_LOCAL[i].id)!==-1){SHOPS_LOCAL.splice(i,1)}
+    else if(edits[SHOPS_LOCAL[i].id]){Object.assign(SHOPS_LOCAL[i],edits[SHOPS_LOCAL[i].id])}
+  }
+}
+
+function openAdminAuth(){
+  document.getElementById('admPwInput').value='';
+  document.getElementById('admPwMsg').textContent='';
+  document.getElementById('admPwModal').classList.add('show');
+}
+function checkAdminPw(){
+  if(document.getElementById('admPwInput').value===ADMIN_PW){
+    document.getElementById('admPwModal').classList.remove('show');
+    var btn=document.getElementById('adminNavBtn');btn.style.display='flex';
+    switchTab('admin',btn);renderAdminPlaces();renderAdminShops();
+    toast('⚙️ ยินดีต้อนรับ Admin!');
+  }else{
+    var m=document.getElementById('admPwMsg');m.className='msg-box error';m.textContent='รหัสผ่านไม่ถูกต้อง';
+  }
+}
+function setAdmTab(tab,el){
+  document.querySelectorAll('#admSubTabs .auth-tab').forEach(function(b){b.classList.remove('active')});
+  el.classList.add('active');
+  document.getElementById('adm-pc').style.display=tab==='places'?'block':'none';
+  document.getElementById('adm-sc').style.display=tab==='shops'?'block':'none';
+  document.getElementById('adm-dc').style.display=tab==='data'?'block':'none';
+  if(tab==='data'){renderDataOverview();switchDataType('users',document.querySelector('#dataTypeChips .chip'))}
+}
+function renderAdminPlaces(){
+  var el=document.getElementById('adm-pl-list');if(!el)return;
+  var featured=[];try{featured=JSON.parse(localStorage.getItem('moshi_featured')||'[]')}catch(e){}
+  var h='<div style="font-size:11px;color:var(--txl);margin-bottom:7px">สถานที่ที่เพิ่มเอง '+customPlaces.length+' แห่ง · ⭐ ปักหมุดไฮไลท์ได้จากหน้าสถานที่ทั้งหมด</div>';
+  if(featured.length){
+    h+='<div style="font-size:11px;font-weight:600;color:var(--pd);margin-bottom:5px">⭐ ไฮไลท์ที่เลือกไว้ ('+featured.length+')</div>';
+    h+=featured.map(function(id){
+      var p=PLACES.find(function(x){return x.id===id});if(!p)return'';
+      return'<div class="adm-item" style="border-left:3px solid var(--gold)"><div style="flex:1"><div class="adm-item-name">⭐ '+esc(p.name)+'</div><div class="adm-item-sub">'+esc(p.district)+'</div></div><button class="btn-del" onclick="unpinHL(\''+id+'\')">เอาออก</button></div>';
+    }).join('');
+    h+='<div style="height:8px"></div>';
+  }
+  h+='<div style="font-size:11px;font-weight:600;color:var(--txl);margin-bottom:5px">สถานที่ที่เพิ่มเอง</div>';
+  h+=customPlaces.length?customPlaces.map(function(p,i){
+    var isPinned=featured.indexOf(p.id)!==-1;
+    return'<div class="adm-item"><div style="flex:1"><div class="adm-item-name">'+esc(p.name)+(isPinned?' ⭐':'')+'</div><div class="adm-item-sub">'+esc(p.district)+' · '+catKey(p.category)+(p.lat?' · 📍':' · ไม่มีพิกัด')+'</div></div>'+
+    '<div style="display:flex;gap:5px">'+
+    '<button class="btn-edit-sm" style="background:'+(isPinned?'#fef9c3':'')+';" onclick="toggleHL(\''+p.id+'\')">'+(isPinned?'★':'☆')+'</button>'+
+    '<button class="btn-edit-sm" onclick="editCP('+i+')">✏️</button>'+
+    '<button class="btn-del" onclick="delCP('+i+')">ลบ</button></div></div>';
+  }).join(''):'<div class="empty-box" style="padding:12px"><p>ยังไม่มีสถานที่ที่เพิ่มเอง</p></div>';
+  el.innerHTML=h;
+}
+function renderAdminShops(){
+  var el=document.getElementById('adm-sh-list');if(!el)return;
+  var h='<div style="font-size:11px;color:var(--txl);margin-bottom:7px">ร้านค้าทั้งหมด '+SHOPS_LOCAL.length+' ร้าน (⭐ = เพิ่มเอง)</div>';
+  h+=SHOPS_LOCAL.length?SHOPS_LOCAL.map(function(s,i){
+    var isCustom=customShops.some(function(x){return x.id===s.id});
+    return'<div class="adm-item"><div style="flex:1">'+
+      '<div class="adm-item-name">'+s.e+' '+esc(s.name)+(isCustom?' ⭐':'')+'</div>'+
+      '<div class="adm-item-sub">'+esc(s.cat)+' · 🪙'+s.coins+' → '+esc(s.discount)+'</div></div>'+
+      '<div style="display:flex;gap:5px">'+
+      '<button class="btn-edit-sm" onclick="editCS('+i+')">✏️</button>'+
+      '<button class="btn-del" onclick="delCS('+i+')">ลบ</button></div></div>';
+  }).join(''):'<div class="empty-box" style="padding:12px"><p>ไม่มีร้านค้า</p></div>';
+  el.innerHTML=h;
+}
+function submitAddPlace(){
+  var name=document.getElementById('af-name').value.trim();
+  var dist=document.getElementById('af-dist').value.trim();
+  if(!name||!dist){var m=document.getElementById('af-msg');m.className='msg-box error';m.textContent='กรุณากรอกชื่อและอำเภอ';return}
+  var cat=document.getElementById('af-cat').value;
+  var lat=parseFloat(document.getElementById('af-lat').value)||0;
+  var lon=parseFloat(document.getElementById('af-lon').value)||0;
+  var hl=document.getElementById('af-hl').value.trim()||name;
+  var imgV=document.getElementById('af-img').value.trim();
+  if(editPlaceIdx>=0){
+    var p=customPlaces[editPlaceIdx];
+    p.name=name;p.district=dist;p.category=cat;p.lat=lat;p.lon=lon;p.highlights=hl;
+    if(imgV)p.img=imgV;else delete p.img;
+    localStorage.setItem('moshi_cplaces',JSON.stringify(customPlaces));
+    var pIdx=PLACES.findIndex(function(x){return x.id===p.id});
+    if(pIdx!==-1)PLACES[pIdx]=p;
+    var m=document.getElementById('af-msg');m.className='msg-box success';m.textContent='✅ แก้ไข "'+name+'" แล้ว';
+    setTimeout(function(){m.className='';m.textContent=''},3000);
+    cancelEditPlace();renderAdminPlaces();filterPlaces();toast('✅ บันทึกการแก้ไขแล้ว!');
+  }else{
+    var p={id:'C'+Date.now().toString(36).slice(-6).toUpperCase(),name:name,district:dist,category:cat,type:'Sub',lat:lat,lon:lon,highlights:hl};
+    if(imgV)p.img=imgV;
+    customPlaces.push(p);PLACES.push(p);
+    localStorage.setItem('moshi_cplaces',JSON.stringify(customPlaces));
+    ['af-name','af-dist','af-lat','af-lon','af-hl','af-img'].forEach(function(id){document.getElementById(id).value=''});
+    var m=document.getElementById('af-msg');m.className='msg-box success';m.textContent='✅ เพิ่ม "'+name+'" แล้ว';
+    setTimeout(function(){m.className='';m.textContent=''},3000);
+    renderAdminPlaces();filterPlaces();toast('✅ เพิ่มสถานที่แล้ว!');
+  }
+}
+function submitAddShop(){
+  var name=document.getElementById('sf-name').value.trim();
+  if(!name){var m=document.getElementById('sf-msg');m.className='msg-box error';m.textContent='กรุณากรอกชื่อร้าน';return}
+  var cat=document.getElementById('sf-cat').value.trim()||'อื่นๆ';
+  var disc=document.getElementById('sf-disc').value.trim()||'ส่วนลดพิเศษ';
+  var coins=parseInt(document.getElementById('sf-coins').value)||50;
+  var lat=parseFloat(document.getElementById('sf-lat').value)||0;
+  var lon=parseFloat(document.getElementById('sf-lon').value)||0;
+  var eMap={'คาเฟ่':'☕','อาหาร':'🍱','OTOP':'🛍️','เกษตร':'🌾','นม':'🥛','เครื่องดื่ม':'🧃'};
+  var e=Object.keys(eMap).reduce(function(a,k){return cat.indexOf(k)!==-1?eMap[k]:a},'🏪');
+  if(editShopIdx>=0){
+    var s=SHOPS_LOCAL[editShopIdx];
+    s.name=name;s.cat=cat;s.desc=document.getElementById('sf-desc').value.trim()||name;
+    s.discount=disc;s.coins=coins;s.lat=lat;s.lon=lon;s.e=e;
+    var csIdx=customShops.findIndex(function(x){return x.id===s.id});
+    if(csIdx!==-1){customShops[csIdx]=Object.assign({},s);localStorage.setItem('moshi_cshops',JSON.stringify(customShops))}
+    else{var edits={};try{edits=JSON.parse(localStorage.getItem('moshi_sedit')||'{}')}catch(e){}edits[s.id]=Object.assign({},s);localStorage.setItem('moshi_sedit',JSON.stringify(edits))}
+    var m=document.getElementById('sf-msg');m.className='msg-box success';m.textContent='✅ แก้ไข "'+name+'" แล้ว';
+    setTimeout(function(){m.className='';m.textContent=''},3000);
+    cancelEditShop();renderAdminShops();renderShopsLocal();toast('✅ บันทึกการแก้ไขแล้ว!');
+  }else{
+    var s={id:'CS'+Date.now().toString(36).slice(-5).toUpperCase(),name:name,cat:cat,
+      desc:document.getElementById('sf-desc').value.trim()||name,
+      discount:disc,coins:coins,lat:lat,lon:lon,bg:'#EEEDFE',cl:'#534AB7',e:e};
+    customShops.push(s);SHOPS_LOCAL.push(s);
+    localStorage.setItem('moshi_cshops',JSON.stringify(customShops));
+    ['sf-name','sf-cat','sf-desc','sf-disc','sf-coins','sf-lat','sf-lon'].forEach(function(id){document.getElementById(id).value=''});
+    var m=document.getElementById('sf-msg');m.className='msg-box success';m.textContent='✅ เพิ่ม "'+name+'" แล้ว';
+    setTimeout(function(){m.className='';m.textContent=''},3000);
+    renderAdminShops();renderShopsLocal();toast('✅ เพิ่มร้านค้าแล้ว!');
+  }
+}
+function delCP(i){
+  var id=customPlaces[i].id;customPlaces.splice(i,1);
+  localStorage.setItem('moshi_cplaces',JSON.stringify(customPlaces));
+  var pi=PLACES.findIndex(function(p){return p.id===id});if(pi!==-1)PLACES.splice(pi,1);
+  renderAdminPlaces();filterPlaces();renderHighlights();toast('ลบสถานที่แล้ว');
+}
+function toggleHL(id){
+  var featured=[];try{featured=JSON.parse(localStorage.getItem('moshi_featured')||'[]')}catch(e){}
+  var idx=featured.indexOf(id);
+  if(idx===-1){featured.push(id);toast('⭐ เพิ่มในไฮไลท์แล้ว!')}
+  else{featured.splice(idx,1);toast('นำออกจากไฮไลท์แล้ว')}
+  localStorage.setItem('moshi_featured',JSON.stringify(featured));
+  renderAdminPlaces();renderHighlights();
+}
+function unpinHL(id){toggleHL(id)}
+function delCS(i){
+  var s=SHOPS_LOCAL[i];
+  var csIdx=customShops.findIndex(function(x){return x.id===s.id});
+  if(csIdx!==-1){
+    customShops.splice(csIdx,1);localStorage.setItem('moshi_cshops',JSON.stringify(customShops));
+  }else{
+    var hidden=[];try{hidden=JSON.parse(localStorage.getItem('moshi_shide')||'[]')}catch(e){}
+    hidden.push(s.id);localStorage.setItem('moshi_shide',JSON.stringify(hidden));
+  }
+  SHOPS_LOCAL.splice(i,1);
+  renderAdminShops();renderShopsLocal();toast('ลบ "'+s.name+'" แล้ว');
+}
+
+// ── DATA DASHBOARD ──
+var curDataType='users';
+function renderDataOverview(){
+  var users=getUsers();
+  var tm=0,tr=0;
+  users.forEach(function(u){tm+=getLogs(u.username).length;tr+=getRedemptions(u.username).length});
+  document.getElementById('stat-users').textContent=users.length;
+  document.getElementById('stat-places').textContent=PLACES.length;
+  document.getElementById('stat-missions-done').textContent=tm;
+  document.getElementById('stat-reds').textContent=tr;
+}
+function switchDataType(type,el){
+  curDataType=type;
+  document.querySelectorAll('#dataTypeChips .chip').forEach(function(c){c.classList.remove('active')});
+  if(el)el.classList.add('active');
+  renderDataTable(type);
+}
+function renderDataTable(type){
+  var users=getUsers();var rows='';var head='';
+  if(type==='users'){
+    head='<tr><th>#</th><th>ชื่อผู้ใช้</th><th>🪙 เหรียญ</th><th>✅ ภารกิจ</th><th>🎟️ คูปอง</th><th>🧳 ของสะสม</th></tr>';
+    rows=users.map(function(u,i){
+      var logs=getLogs(u.username).length;
+      var reds=getRedemptions(u.username).length;
+      var owned=u.ownedItems?u.ownedItems.split(',').filter(Boolean).length:0;
+      return'<tr><td>'+(i+1)+'</td><td><b>'+esc(u.username)+'</b></td><td>'+u.coins+'</td><td>'+logs+'</td><td>'+reds+'</td><td>'+owned+'</td></tr>';
+    }).join('');
+    if(!users.length)rows='<tr><td colspan="6" style="text-align:center;color:var(--txl)">ยังไม่มีผู้ใช้</td></tr>';
+  }else if(type==='places'){
+    head='<tr><th>#</th><th>ID</th><th>ชื่อสถานที่</th><th>อำเภอ</th><th>หมวด</th><th>พิกัด</th></tr>';
+    rows=PLACES.map(function(p,i){
+      var coord=p.lat?(p.lat.toFixed(4)+', '+p.lon.toFixed(4)):'-';
+      var isCustom=customPlaces.some(function(x){return x.id===p.id});
+      return'<tr><td>'+(i+1)+'</td><td style="font-size:10px;color:var(--txl)">'+p.id+(isCustom?' ⭐':'')+'</td><td><b>'+esc(p.name)+'</b></td><td>'+esc(p.district)+'</td><td>'+catKey(p.category)+'</td><td style="font-size:10px">'+coord+'</td></tr>';
+    }).join('');
+  }else if(type==='missions'){
+    var mc={};
+    users.forEach(function(u){getLogs(u.username).forEach(function(l){mc[l.missionId]=(mc[l.missionId]||[]);mc[l.missionId].push(u.username)})});
+    var done=MISSIONS.filter(function(m){return mc[m.missionId]});
+    head='<tr><th>#</th><th>ภารกิจ</th><th>สถานที่</th><th>ผู้ทำสำเร็จ</th></tr>';
+    if(!done.length)rows='<tr><td colspan="4" style="text-align:center;color:var(--txl)">ยังไม่มีภารกิจสำเร็จ</td></tr>';
+    else rows=done.map(function(m,i){
+      var who=(mc[m.missionId]||[]).join(', ');
+      return'<tr><td>'+(i+1)+'</td><td style="font-size:10px">'+m.missionId+'</td><td>'+esc(m.placeName)+'</td><td style="font-size:10px;color:var(--txl)">'+esc(who)+'</td></tr>';
+    }).join('');
+  }else if(type==='redemptions'){
+    head='<tr><th>#</th><th>ผู้ใช้</th><th>ร้านค้า</th><th>รหัส</th><th>เหรียญ</th><th>วันที่</th></tr>';
+    var all=[];
+    users.forEach(function(u){getRedemptions(u.username).forEach(function(r){all.push({user:u.username,r:r})})});
+    all.sort(function(a,b){return b.r.ts-a.r.ts});
+    if(!all.length)rows='<tr><td colspan="6" style="text-align:center;color:var(--txl)">ยังไม่มีการแลกคูปอง</td></tr>';
+    else rows=all.map(function(item,i){
+      return'<tr><td>'+(i+1)+'</td><td><b>'+esc(item.user)+'</b></td><td>'+esc(item.r.shopName)+'</td><td style="font-family:monospace;font-size:10px;color:var(--pd)">'+item.r.code+'</td><td>'+item.r.coins+'</td><td style="font-size:10px">'+new Date(item.r.ts).toLocaleDateString('th-TH')+'</td></tr>';
+    }).join('');
+  }
+  document.getElementById('adm-data-table').innerHTML='<div class="tbl-wrap"><table class="dtbl"><thead>'+head+'</thead><tbody>'+rows+'</tbody></table></div>';
+}
+function exportCurrentCSV(){
+  var users=getUsers();var rows=[];
+  if(curDataType==='users'){
+    rows.push(['ชื่อผู้ใช้','เหรียญ','ภารกิจสำเร็จ','คูปองแลก','ของสะสม']);
+    users.forEach(function(u){rows.push([u.username,u.coins,getLogs(u.username).length,getRedemptions(u.username).length,(u.ownedItems||'').split(',').filter(Boolean).length])});
+  }else if(curDataType==='places'){
+    rows.push(['ลำดับ','ID','ชื่อสถานที่','อำเภอ','หมวดหมู่','ประเภท','Latitude','Longitude','ไฮไลท์']);
+    PLACES.forEach(function(p,i){rows.push([i+1,p.id,p.name,p.district,p.category,p.type,p.lat||'',p.lon||'',p.highlights||''])});
+  }else if(curDataType==='missions'){
+    rows.push(['ภารกิจ','สถานที่','ผู้ทำสำเร็จ']);
+    var mc={};users.forEach(function(u){getLogs(u.username).forEach(function(l){mc[l.missionId]=(mc[l.missionId]||[]);mc[l.missionId].push(u.username)})});
+    MISSIONS.forEach(function(m){if(mc[m.missionId])rows.push([m.missionId,m.placeName,(mc[m.missionId]||[]).join(', ')])});
+  }else if(curDataType==='redemptions'){
+    rows.push(['ผู้ใช้','ร้านค้า','รหัสคูปอง','ส่วนลด','เหรียญ','วันที่']);
+    users.forEach(function(u){getRedemptions(u.username).forEach(function(r){rows.push([u.username,r.shopName,r.code,r.discount,r.coins,new Date(r.ts).toLocaleDateString('th-TH')])})});
+  }
+  var csv='\uFEFF'+rows.map(function(r){return r.map(function(c){return'"'+String(c).replace(/"/g,'""')+'"'}).join(',')}).join('\n');
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download='moshi_'+curDataType+'_'+new Date().toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  toast('📥 ดาวน์โหลด CSV แล้ว!');
+}
+
+// ── AUTO LOGIN ──
+window.addEventListener('load',function(){
+  var session=getSession();
+  if(session){
+    var found=getUsers().find(function(u){return u.username===session.username});
+    if(found){user={username:found.username,coins:found.coins||0,equippedItems:found.equippedItems||'none,none,none',ownedItems:found.ownedItems||''};enterApp()}
+  }
+});
+</script>
+</body>
+</html>
