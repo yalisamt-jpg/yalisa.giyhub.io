@@ -506,11 +506,10 @@ button{font-family:'Prompt',sans-serif;cursor:pointer}
     <div class="tab-panel" id="tab-wardrobe">
       <div class="wardrobe-top">
         <div class="mascot-wrap" id="mascotMain">
-          <div class="slot-hat" id="slotHat"></div>
-          <div class="slot-glasses" id="slotGlasses"></div>
-          <div class="slot-bag" id="slotBag"></div>
-          <div class="bear-head"><div class="bear-ear l"></div><div class="bear-ear r"></div><div class="bear-eye l"></div><div class="bear-eye r"></div><div class="bear-cheek l"></div><div class="bear-cheek r"></div><div class="bear-snout"><div class="bear-nose"></div></div></div>
-          <div class="bear-body"><div class="bear-paw l"></div><div class="bear-paw r"></div></div>
+          <img id="bearImgMain" src="Bear.png" alt="มาสคอตหมี" style="position:absolute;top:0;left:0;width:120px;height:148px;object-fit:contain">
+          <div class="slot-hat" id="slotHat" style="pointer-events:none"></div>
+          <div class="slot-glasses" id="slotGlasses" style="pointer-events:none"></div>
+          <div class="slot-bag" id="slotBag" style="pointer-events:none"></div>
         </div>
         <div class="wardrobe-label">มาสคอตของฉัน ✨</div>
         <div class="slot-tabs"><button class="slot-tab active" onclick="setShopSlot('hat',this)">🎩 หมวก</button><button class="slot-tab" onclick="setShopSlot('glasses',this)">👓 แว่น</button><button class="slot-tab" onclick="setShopSlot('bag',this)">🎒 ของ</button></div>
@@ -519,15 +518,14 @@ button{font-family:'Prompt',sans-serif;cursor:pointer}
     </div>
     <div class="tab-panel" id="tab-profile">
       <div class="profile-hero">
-        <div style="transform:scale(0.65);transform-origin:top center;height:148px;overflow:hidden">
-          <div class="mascot-wrap" id="mascotProfile">
-            <div class="slot-hat" id="pSlotHat"></div><div class="slot-glasses" id="pSlotGlasses"></div><div class="slot-bag" id="pSlotBag"></div>
-            <div class="bear-head"><div class="bear-ear l"></div><div class="bear-ear r"></div><div class="bear-eye l"></div><div class="bear-eye r"></div><div class="bear-cheek l"></div><div class="bear-cheek r"></div><div class="bear-snout"><div class="bear-nose"></div></div></div>
-            <div class="bear-body"><div class="bear-paw l"></div><div class="bear-paw r"></div></div>
-          </div>
-        </div>
+        <img src="Bear_head.png" alt="หมีมาสคอต" style="width:90px;height:90px;object-fit:contain;border-radius:50%;background:rgba(255,255,255,0.2);padding:6px;margin-bottom:4px;display:block;margin-left:auto;margin-right:auto">
         <div class="prof-name" id="profName">-</div>
         <div class="prof-coins">🪙 <span id="profCoins">0</span> เหรียญ</div>
+        <!-- slot IDs needed by JS -->
+        <span id="pSlotHat" style="display:none"></span>
+        <span id="pSlotGlasses" style="display:none"></span>
+        <span id="pSlotBag" style="display:none"></span>
+        <span id="bearImgProfile" style="display:none"></span>
       </div>
       <div class="stat-row">
         <div class="stat-card"><div class="stat-n" id="stTotal">130</div><div class="stat-l">สถานที่</div></div>
@@ -945,22 +943,24 @@ var MISSIONS=[
 ];
 
 var SHOP=[
-{id:'hat_pangsida',slot:'hat',name:'ปีกผีเสื้อปางสีดา',emoji:'🦋',price:160,desc:'ธีมอุทยานปางสีดา'},
-{id:'hat_lalu',slot:'hat',name:'หมวกนักสำรวจละลุ',emoji:'⛰️',price:130,desc:'ธีมเสาดินละลุ'},
+{id:'hat_pangsida',slot:'hat',name:'ปีกผีเสื้อปางสีดา',emoji:'🦋',img:'hat_pangsida.png',price:160,desc:'ธีมอุทยานปางสีดา'},
+{id:'hat_lalu',slot:'hat',name:'หมวกนักสำรวจละลุ',emoji:'⛰️',img:'hat_lalu.png',price:130,desc:'ธีมเสาดินละลุ'},
 {id:'hat_pink',slot:'hat',name:'มงกุฎปราสาทชมพู',emoji:'🌸',price:220,desc:'ธีมปราสาทเขาน้อยสีชมพู'},
-{id:'gls_sunflower',slot:'glasses',name:'แว่นทานตะวันสระแก้ว',emoji:'🌻',price:140,desc:'ธีมทุ่งทานตะวัน'},
+{id:'gls_sunflower',slot:'glasses',name:'แว่นทานตะวันสระแก้ว',emoji:'🌻',img:'gls_sunflower.png',price:140,desc:'ธีมทุ่งทานตะวัน'},
 {id:'acc_malai',slot:'bag',name:'พวงมาลัยสระแก้ว',emoji:'💐',price:110,desc:'ธีมของฝากพื้นเมือง'},
-{id:'hat_sun',slot:'hat',name:'หมวกกันแดด',emoji:'👒',price:50,desc:'เที่ยวแดดออก'},
-{id:'hat_cap',slot:'hat',name:'หมวกแก็ป',emoji:'🧢',price:60,desc:'สไตล์สตรีท'},
+{id:'hat_sun',slot:'hat',name:'หมวกกันแดด',emoji:'👒',img:'hat_sun.png',price:50,desc:'เที่ยวแดดออก'},
+{id:'hat_cap',slot:'hat',name:'หมวกแก็ป',emoji:'🧢',img:'hat_cap.png',price:60,desc:'สไตล์สตรีท'},
 {id:'hat_cowboy',slot:'hat',name:'หมวกคาวบอย',emoji:'🤠',price:100,desc:'นักผจญภัย'},
 {id:'hat_party',slot:'hat',name:'หมวกปาร์ตี้',emoji:'🎉',price:80,desc:'มาเที่ยวกัน!'},
 {id:'hat_tophat',slot:'hat',name:'หมวกสุภาพ',emoji:'🎩',price:150,desc:'ดูดีมีสไตล์'},
 {id:'hat_crown',slot:'hat',name:'มงกุฎทอง',emoji:'👑',price:250,desc:'ราชาแห่งทริป'},
-{id:'gls_round',slot:'glasses',name:'แว่นกลม',emoji:'👓',price:70,desc:'น่ารักวินเทจ'},
+{id:'gls_round',slot:'glasses',name:'แว่นกลม',emoji:'👓',img:'gls_round.png',price:70,desc:'น่ารักวินเทจ'},
 {id:'gls_cool',slot:'glasses',name:'แว่นกันแดด',emoji:'🕶️',price:90,desc:'เท่มาก'},
 {id:'gls_heart',slot:'glasses',name:'แว่นรูปหัวใจ',emoji:'🩷',price:120,desc:'น่ารักสุดๆ'},
-{id:'acc_backpack',slot:'bag',name:'เป้สะพาย',emoji:'🎒',price:80,desc:'พร้อมเที่ยว'},
-{id:'acc_camera',slot:'bag',name:'กล้องถ่ายรูป',emoji:'📷',price:100,desc:'สายถ่ายรูป'},
+{id:'acc_wings',slot:'bag',name:'ปีกนางฟ้า',emoji:'🪽',img:'acc_wings.png',replace:true,price:150,desc:'บินสำรวจสระแก้ว'},
+{id:'acc_bearhead',slot:'bag',name:'พวงกุญแจหมีน้อย',emoji:'🐻',img:'Bear_head.png',price:90,desc:'น่ารักน่าโชว์'},
+{id:'acc_backpack',slot:'bag',name:'เป้สะพาย',emoji:'🎒',img:'acc_backpack.png',price:80,desc:'พร้อมเที่ยว'},
+{id:'acc_camera',slot:'bag',name:'กล้องถ่ายรูป',emoji:'📷',img:'acc_camera.png',price:100,desc:'สายถ่ายรูป'},
 {id:'acc_flower',slot:'bag',name:'ช่อดอกไม้',emoji:'💐',price:70,desc:'สวยงาม'},
 {id:'acc_compass',slot:'bag',name:'เข็มทิศ',emoji:'🧭',price:110,desc:'นักสำรวจ'},
 {id:'acc_map',slot:'bag',name:'แผนที่',emoji:'🗺️',price:90,desc:'รักการเดินทาง'}
@@ -1316,9 +1316,21 @@ function viewImg(el){var src=el.getAttribute('data-src');if(src){var w=window.op
 
 // ── WARDROBE ──
 function updateAllMascots(){
-  var h=equipped.hat!=='none'?(findItem(equipped.hat)||{}).emoji||'':'';
-  var gl=equipped.glasses!=='none'?(findItem(equipped.glasses)||{}).emoji||'':'';
-  var b=equipped.bag!=='none'?(findItem(equipped.bag)||{}).emoji||'':'';
+  // หา item ที่ equipped อยู่
+  var hatItem=equipped.hat!=='none'?findItem(equipped.hat):null;
+  var glItem=equipped.glasses!=='none'?findItem(equipped.glasses):null;
+  var bagItem=equipped.bag!=='none'?findItem(equipped.bag):null;
+  // เปลี่ยนรูปหมี — priority: hat img > bag ที่มี replace:true > Bear.png
+  var bearSrc='Bear.png';
+  if(hatItem&&hatItem.img) bearSrc=hatItem.img;
+  else if(bagItem&&bagItem.img&&bagItem.replace) bearSrc=bagItem.img;
+  ['bearImgMain','bearImgProfile'].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.src=bearSrc;
+  });
+  // slot emoji — ถ้า item มีรูปแล้ว (รูปหมีใส่ของแล้ว) ให้ซ่อน slot emoji ไป ไม่งั้นจะซ้อน 2 ชั้น
+  var h=hatItem&&hatItem.img?'':(hatItem?hatItem.emoji||'':'');
+  var gl=glItem&&glItem.img?'':(glItem?glItem.emoji||'':'');
+  var b=(bagItem&&bagItem.img&&bagItem.replace)?'':(bagItem?bagItem.emoji||'':'');
   ['slotHat','pSlotHat'].forEach(function(id){document.getElementById(id).textContent=h});
   ['slotGlasses','pSlotGlasses'].forEach(function(id){document.getElementById(id).textContent=gl});
   ['slotBag','pSlotBag'].forEach(function(id){document.getElementById(id).textContent=b});
@@ -1336,7 +1348,7 @@ function renderShop(){
     else if(owned){tag='<span class="shop-tag owned">✅ มีแล้ว</span>';bc='btn-equip';bt='สวมใส่'}
     else{bc='btn-buy';bt='🪙 '+item.price}
     return'<div class="shop-card'+(owned?' owned':'')+(isEq?' equipped':'')+'">'+tag+
-      '<span class="shop-emoji">'+item.emoji+'</span>'+
+      (item.img?'<img src="'+item.img+'" style="width:80px;height:80px;object-fit:contain;margin-bottom:6px;display:block;margin-left:auto;margin-right:auto" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'block\'" alt="'+esc(item.name)+'">'+'<span class="shop-emoji" style="display:none">'+item.emoji+'</span>':'<span class="shop-emoji">'+item.emoji+'</span>')+
       '<div class="shop-name">'+esc(item.name)+'</div>'+
       '<div class="shop-desc">'+esc(item.desc)+'</div>'+
       '<button class="btn-shop '+bc+'" onclick="shopAction(\''+item.id+'\')">'+bt+'</button></div>';
