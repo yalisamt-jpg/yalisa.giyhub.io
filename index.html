@@ -2158,15 +2158,22 @@ setTimeout(function(){try{if(document.getElementById('mainApp')&&getComputedStyl
 .myhero-card .go{margin-top:10px;background:#4A4036;color:#F3ECE0;padding:9px 20px;border-radius:11px;font-size:12.5px;font-weight:600;border:none;cursor:pointer;font-family:'Prompt',sans-serif}
 /* ---- PROFILE 2-col (desktop) ---- */
 @media(min-width:768px){
-  #tab-profile.tab-panel{display:grid;grid-template-columns:340px 1fr;column-gap:32px;align-items:start}
+  #tab-profile.tab-panel.active{display:grid;grid-template-columns:340px 1fr;column-gap:32px;align-items:start}
   #tab-profile .profile-hero{grid-column:1;grid-row:1 / 99;margin-bottom:0;position:sticky;top:92px}
   #tab-profile .stat-row{grid-column:2;grid-row:1;margin-bottom:0}
   #tab-profile .gallery-title{grid-column:2;grid-row:2;margin-top:22px}
   #tab-profile .gallery-grid{grid-column:2;grid-row:3}
   #tab-profile > div[style*="margin-top:16px"]{grid-column:2;grid-row:4}
   .gallery-grid{grid-template-columns:repeat(4,1fr)!important}
+  /* ---- WARDROBE 2-col (desktop) ---- */
+  #tab-wardrobe.tab-panel.active{display:grid;grid-template-columns:380px 1fr;column-gap:36px;align-items:start}
+  #tab-wardrobe .wardrobe-top{grid-column:1;position:sticky;top:92px;margin-bottom:0}
+  #tab-wardrobe #shopGrid{grid-column:2;margin-top:0}
+  #tab-wardrobe .shop-grid{grid-template-columns:repeat(3,1fr)!important}
 }
 .profile-hero{background:linear-gradient(160deg,#4A4036,#6E5B45)!important}
+/* drawn-png outfit overlays */
+.ov-png{position:absolute;pointer-events:none}
 </style>
 <script>
 (function(){
@@ -2213,9 +2220,60 @@ setTimeout(function(){try{if(document.getElementById('mainApp')&&getComputedStyl
       '<div class="myhero-card"><div class="myhero-niche"><div class="hb">'+hb+'</div></div><div class="lbl">หมีน้อยรอเที่ยวกับคุณ</div><button class="go" onclick="navTo(\'wardrobe\')">ไปแต่งตัว →</button></div>'+
     '</div>';
   };
+  // ---- drawn-PNG outfits (match approved design) ----
+  var POS={
+    hat_sun:{w:100,top:-9}, hat_cap:{w:92,top:-3}, hat_lalu:{w:112,top:8}, hat_pangsida:{w:88,top:-26},
+    gls_round:{w:58,top:36,blend:1}, gls_sunflower:{w:70,top:37},
+    acc_backpack:{w:74,top:74,tx:-2,z:5}, acc_camera:{w:46,top:78,z:10,paws:1}, acc_wings:{w:170,top:40,behind:1}
+  };
+  function art(id){
+    var A=window.MOSHI_ART||{};
+    if(POS[id]) return '<img src="'+id+'.png" style="max-width:100%;max-height:74px;object-fit:contain;filter:drop-shadow(0 2px 3px rgba(74,64,54,.16))'+(POS[id].blend?';mix-blend-mode:multiply':'')+'">';
+    return A[id]||'';
+  }
+  window.renderShop=function(){
+    var grid=document.getElementById('shopGrid'); if(!grid||typeof SHOP==='undefined')return;
+    var items=SHOP.filter(function(x){return x.slot===curShopSlot;});
+    grid.innerHTML=items.map(function(item){
+      var owned=ownedItems.indexOf(item.id)!==-1, eq=equipped[item.slot]===item.id;
+      var tag=eq?'<div class="shop-tag equipped">ใส่อยู่</div>':(owned?'<div class="shop-tag owned">มีแล้ว</div>':'');
+      var btn=eq?'<button class="btn-shop btn-unequip" onclick="shopAction(\''+item.id+'\')">ถอดออก</button>'
+        :(owned?'<button class="btn-shop btn-equip" onclick="shopAction(\''+item.id+'\')">สวมใส่</button>'
+        :'<button class="btn-shop btn-buy" onclick="shopAction(\''+item.id+'\')">🪙 '+item.price+'</button>');
+      return '<div class="shop-card'+(eq?' equipped':(owned?' owned':''))+'">'+tag+
+        '<div class="art-box">'+art(item.id)+'</div>'+
+        '<div class="shop-name">'+item.name+'</div><div class="shop-desc">'+item.desc+'</div>'+btn+'</div>';
+    }).join('');
+  };
+  window.updateAllMascots=function(){
+    var A=window.MOSHI_ART||{};
+    var mw=document.getElementById('mascotMain');
+    [].slice.call(document.querySelectorAll('.ov-png')).forEach(function(e){e.remove();});
+    function slotEl(k){return document.getElementById(k==='hat'?'slotHat':k==='glasses'?'slotGlasses':'slotBag');}
+    function pSlotEl(k){return document.getElementById(k==='hat'?'pSlotHat':k==='glasses'?'pSlotGlasses':'pSlotBag');}
+    ['hat','glasses','bag'].forEach(function(k){
+      var id=equipped[k], s=slotEl(k), ps=pSlotEl(k);
+      if(ps)ps.innerHTML=(id&&id!=='none'&&A[id])?A[id]:'';
+      if(!id||id==='none'){if(s)s.innerHTML='';return;}
+      if(POS[id]&&mw){
+        if(s)s.innerHTML='';
+        var p=POS[id], z=(k==='hat'?14:k==='glasses'?15:(p.behind?1:(p.z||8)));
+        var img=document.createElement('img'); img.className='ov-png'; img.src=id+'.png';
+        img.style.cssText='width:'+p.w+'px;max-width:none;left:50%;top:'+p.top+'px;transform:translateX(calc(-50% + '+(p.tx||0)+'px));z-index:'+z+';filter:drop-shadow(0 3px 3px rgba(74,64,54,.18))'+(p.blend?';mix-blend-mode:multiply':'');
+        mw.appendChild(img);
+        if(p.paws){[['l',29],['r',29]].forEach(function(pw,i){
+          var d=document.createElement('div'); d.className='ov-png';
+          d.style.cssText='width:23px;height:20px;bottom:40px;'+(i===0?'left':'right')+':29px;background:#E8B984;border-radius:50%;z-index:9;box-shadow:inset 0 -2px 3px rgba(150,110,70,.28)';
+          var inner=document.createElement('div'); inner.style.cssText='position:absolute;top:5px;left:50%;transform:translateX(-50%);width:13px;height:11px;background:#E3B07E;border-radius:50%';
+          d.appendChild(inner); mw.appendChild(d);
+        });}
+      } else if(s){ s.innerHTML=A[id]||''; }
+    });
+    var w=document.getElementById('mascotMain'); if(w){w.classList.remove('pop');void w.offsetWidth;w.classList.add('pop');}
+  };
   // ---- run ----
-  function boot(){buildChrome();try{if(document.getElementById('mainApp')&&getComputedStyle(document.getElementById('mainApp')).display!=='none'){renderHero();}}catch(e){}}
-  if(typeof enterApp==='function'){var _e=enterApp;window.enterApp=function(){_e.apply(this,arguments);try{buildChrome();renderHero();}catch(e){}};}
+  function boot(){buildChrome();try{if(document.getElementById('mainApp')&&getComputedStyle(document.getElementById('mainApp')).display!=='none'){renderHero();renderShop();updateAllMascots();}}catch(e){}}
+  if(typeof enterApp==='function'){var _e=enterApp;window.enterApp=function(){_e.apply(this,arguments);try{buildChrome();renderHero();renderShop();updateAllMascots();}catch(e){}};}
   document.addEventListener('DOMContentLoaded',boot);
   setTimeout(boot,180);
 })();
