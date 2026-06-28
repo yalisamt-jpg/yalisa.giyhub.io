@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Sakaeo travel trip 🌟 สระแก้ว</title>
+<title>Sakaeo Trip Travel</title>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -370,7 +370,7 @@ button{font-family:'Prompt',sans-serif;cursor:pointer}
     <circle cx="64" cy="13" r="2.8" fill="#E8702A"/>
     <circle cx="64" cy="13" r="1.2" fill="#FFB347"/>
   </g>
-</svg></span><div class="logo-title">Sakaeo travel trip</div><div class="logo-sub">สำรวจสระแก้ว · สะสมเหรียญ · แต่งมาสคอต</div></div>
+</svg></span><div class="logo-title">Sakaeo Trip Travel</div><div class="logo-sub">สำรวจสระแก้ว · สะสมเหรียญ · แต่งมาสคอต</div></div>
   <div class="auth-card">
     <div class="auth-tabs"><button class="auth-tab active" onclick="switchAuthTab('login')">เข้าสู่ระบบ</button><button class="auth-tab" onclick="switchAuthTab('register')">สมัครสมาชิก</button></div>
     <div id="loginForm">
@@ -459,7 +459,7 @@ button{font-family:'Prompt',sans-serif;cursor:pointer}
     <circle cx="64" cy="13" r="2.8" fill="#E8702A"/>
     <circle cx="64" cy="13" r="1.2" fill="#FFB347"/>
   </g>
-</svg>Sakaeo travel trip</span><div class="coins-chip">🪙 <span id="coinsNum">0</span></div></div>
+</svg>Sakaeo Trip Travel</span><div class="coins-chip">🪙 <span id="coinsNum">0</span></div></div>
   <div class="content">
     <div class="tab-panel active" id="tab-places">
       <div id="heroBox" class="hero-box"></div>
@@ -1188,9 +1188,9 @@ function buildRouteTimeline(){
   document.getElementById('planRoute').innerHTML=h;
 }
 function copyPlan(){
-  var t='🌟 แผนทริป Sakaeo travel trip\n══════════\n📍 เริ่ม: ตำแหน่งของฉัน\n\n';
+  var t='🌟 แผนทริป Sakaeo Trip Travel\n══════════\n📍 เริ่ม: ตำแหน่งของฉัน\n\n';
   planPlaces.forEach(function(p,i){t+=(i+1)+'. '+p.name+'\n   📍 '+p.district+'\n   ✨ '+(p.highlights||'').substring(0,60)+'\n\n'});
-  copyText(t+'── Sakaeo travel trip 🌟 ──');
+  copyText(t+'── Sakaeo Trip Travel 🌟 ──');
 }
 
 // ── HAVERSINE ──
@@ -1248,9 +1248,9 @@ function addFromTimeline(placeId){
   buildTripTimeline(curNearby);renderPlaces(filteredPlaces);renderPlan();renderMissions();renderPackages();
 }
 function copyTrip(){
-  var t='🌟 Sakaeo travel trip\n📍 เริ่ม: ตำแหน่งของฉัน\n';
+  var t='🌟 Sakaeo Trip Travel\n📍 เริ่ม: ตำแหน่งของฉัน\n';
   if(curNearby.length){t+='\n⚡ แวะระหว่างทาง:\n';curNearby.forEach(function(p,i){var dt=p.distance<1?Math.round(p.distance*1000)+' ม.':p.distance.toFixed(1)+' กม.';t+='  '+(i+1)+'. '+p.name+' ('+dt+')\n'})}
-  t+='\n🏁 จุดหมาย: '+curPlace.name+'\n── Sakaeo travel trip ──';
+  t+='\n🏁 จุดหมาย: '+curPlace.name+'\n── Sakaeo Trip Travel ──';
   copyText(t);
 }
 
@@ -2200,7 +2200,7 @@ setTimeout(function(){try{if(document.getElementById('mainApp')&&getComputedStyl
       var svg=logo.querySelector('svg'); logo.textContent='';
       if(svg)logo.appendChild(svg);
       var mk=document.createElement('span'); mk.className='brand-mk';
-      mk.innerHTML='Sakaeo <span class="t2">travel</span> <span class="pill">trip</span>';
+      mk.innerHTML='Sakaeo <span class="t2">Trip</span> <span class="pill">Travel</span>';
       logo.appendChild(mk);
     }
     var pav=document.querySelector('.profile-hero img');
