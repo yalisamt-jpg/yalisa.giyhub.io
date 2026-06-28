@@ -1072,24 +1072,19 @@ function switchAuthTab(t){
   document.querySelectorAll('.auth-tab').forEach(function(b,i){b.classList.toggle('active',iL?i===0:i===1)});
 }
 
-// ── Analytics helpers ──
 function todayKey(){var d=new Date();return d.getFullYear()+'-'+(String(d.getMonth()+1).padStart(2,'0'))+'-'+(String(d.getDate()).padStart(2,'0'));}
 function trackLogin(username){
   var now=Date.now();
   var safeUser=username.replace(/[.#$\[\]]/g,'_');
-  // อัปเดต user record
   db.ref('analytics/users/'+safeUser).update({lastLogin:now,username:username});
   db.ref('analytics/users/'+safeUser+'/loginCount').transaction(function(v){return (v||0)+1;});
-  // บันทึก login event รายวัน
   db.ref('analytics/logins/'+todayKey()).transaction(function(v){return (v||0)+1;});
-  // online presence
   db.ref('analytics/online/'+safeUser).set({username:username,ts:now});
   db.ref('analytics/online/'+safeUser).onDisconnect().remove();
 }
 function trackRegister(username){
   var safeUser=username.replace(/[.#$\[\]]/g,'_');
   db.ref('analytics/users/'+safeUser).set({username:username,registeredAt:Date.now(),loginCount:0,lastLogin:Date.now()});
-  db.ref('analytics/totalUsers').transaction(function(v){return (v||0)+1;});
 }
 
 function doLogin(){
@@ -1602,7 +1597,7 @@ function loadCustomData(){
       if(idx!==-1)PLACES[idx]=p; else PLACES.push(p);
     });
     localStorage.setItem('moshi_cplaces',JSON.stringify(customPlaces));db.ref('customPlaces').set(customPlaces);
-    renderPlaces(PLACES); renderAdminLists();
+    renderPlaces(PLACES);
   });
   db.ref('customShops').on('value',function(snap){
     var fbShops=snap.val()||[];
